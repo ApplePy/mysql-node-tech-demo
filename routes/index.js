@@ -1,25 +1,40 @@
 var express = require('express');
 var router = express.Router();
+var db_cmds = require('db_cmds');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-    res.render('index', { title: 'Apollo' });
+    var cb = function(suggestedTrack) {
+        res.render('index', {title: 'Apollo'});
+    };
 });
 
 router.route('/login').get(function(req, res){
-    res.render('login', {title: 'Log In'});
+    var cb = function(suggestedTrack) {
+        res.render('login', {title: 'Log In'});
+    };
 });
 
 router.route('/create-user').get(function(req, res){
-    res.render('create-user', {title: 'Create User'});
+    var cb = function(suggestedTrack) {
+        res.render('create-user', {title: 'Create User'});
+    };
 });
 
 router.route('/welcome').get(function(req, res){
-    res.render('welcome', {title: 'Welcome'});
+    var cb = function(suggestedTrack) {
+        res.render('welcome', {title: 'Welcome', suggestedTrack: suggestedTrack})
+    };
+
+    var userid = *something*;
+
+    db_cmds.suggestedtrack(userid, cb);
 });
 
 router.route('/settings').get(function(req, res){
-    res.render('settings', {title: 'Settings'});
+    var cb = function(suggestedTrack) {
+        res.render('settings', {title: 'Settings'});
+    };
 });
 
 module.exports = router;

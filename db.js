@@ -27,11 +27,18 @@ exports.connect = function(mode, done) {
     done()
 }
 
-// DONT NEED THIS
+// Convenience function.
+exports.query = function(query, cb) {
+    state.pool.query(query, cb);
+};
 
 exports.get = function() {
     return state.pool
-}
+};
+
+
+
+// DONT NEED THIS
 
 exports.fixtures = function(data, done) {
     var pool = state.pool
