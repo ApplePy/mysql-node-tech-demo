@@ -6,15 +6,15 @@ router.get('/', function(req, res, next) {
     res.render('index', { title: 'Apollo' });
 });
 
-router.get('/login', function(req, res){
+router.route('/login').get(function(req, res){
     res.render('login', {title: 'Log In'});
 });
 
-router.get('/create-user', function(req, res){
+router.route('/create-user').get(function(req, res){
     res.render('create-user', {title: 'Create User'});
 });
 
-router.get('/welcome', function(req, res){
+router.route('/login').get(function(req, res){
     res.render('welcome', {title: 'Welcome'});
 });
 

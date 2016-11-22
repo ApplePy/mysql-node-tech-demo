@@ -27,6 +27,8 @@ exports.connect = function(mode, done) {
     done()
 }
 
+// DONT NEED THIS
+
 exports.get = function() {
     return state.pool
 }
