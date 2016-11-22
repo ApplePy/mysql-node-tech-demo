@@ -14,4 +14,8 @@ router.get('/create-user', function(req, res){
     res.render('create-user', {title: 'Create User'});
 });
 
+router.get('/welcome', function(req, res){
+    res.render('welcome', {title: 'Welcome'});
+});
+
 module.exports = router;
