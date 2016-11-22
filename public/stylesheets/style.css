@@ -55,3 +55,8 @@ footer {
   }
   .row.content {height:auto;}
 }
+
+.fillWidth {
+  min-width: 100%;
+  height: auto;
+}
