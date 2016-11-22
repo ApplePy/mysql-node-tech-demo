@@ -1,29 +1,31 @@
 extends layout
 
-block navbar
-    navbar.navbar-default
-        div.container-fluid
-            div.navbar-header
-                button.navbar-toggle(data-toggle = "collapse", data-target = "#navbar")
-                    span.icon-bar
-                    span.icon-bar
-                    span.icon-bar
-                a.navbar-brand(href = 'welcome') Apollo Music
-                    //img(src = "/images/apolloLogo.png", alt = "Apollo Logo" class = "fillWidth")
-            div.collapse(class = "navbar-collapse", id = "#navbar")
-                ul.nav(class = "nav-bar")
-                    p.navbar-text Welcome, {{currentuser}}
-                    button(class = "btn btn-default navbar-btn" type="button" onclick = "location.href = '/settings'")
-                        span.glyphicon(class="glyphicon-cog")
-                    p.navbar-text(class = "navbar-right") Suggested Track: {{suggestedTrack}}
 block content
-    div.container-fluid(class = "text-center")
+    div.container-fluid
         div.row(class = "content")
             div.col-sm-10
-                p Track area
+                div.row(class = "librarySubheader")
+                    div.dropdown
+                        button.btn(class = "btn-default dropdown-toggle" type="button" id="chooseTrackDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true") List tracks...
+                            span.caret
+                        ul.dropdown-menu(aria-labelledby="chooseTrackDropdown")
+                            li(href="/alltracks") All tracks (personal and group)
+                            li(href="/mytracks") Only my tracks
+
+                div.row
+                    p Track 1
+                div.row
+                    p Track 2
+                div.row
+                    p Track 3
             div.col-sm-2(class = "sidenav")
                 div.well
-                    p Playlists
+                    div.row
+                        p Playlist 1
+                    div.row
+                        p Playlist 2
+                    div.row
+                        p Playlist 3
     footer.container-fluid(class = "text-center")
         audio
             controls

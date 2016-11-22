@@ -60,3 +60,9 @@ footer {
   min-width: 100%;
   height: auto;
 }
+
+.librarySubheader {
+  background-color: #000;
+  color: #fff;
+  padding: 10px;
+}
