@@ -1,3 +1,21 @@
 extends layout
 
 block content
+    div.vertical-center
+        div.row(class = "text-center")
+            div.span4
+            div.span4
+                img(src = "/images/apolloLogo.png", alt = "Apollo Logo")
+            div.span4
+            div.spaceBox
+            div.span4
+                form(method="post")
+                    label Username
+                    input(type="text", name = "username", placeholder="Username")
+                    br
+                    br
+                    label Password
+                    input(type="password", name = "password", placeholder="Password")
+                    br
+                    br
+                    input(type="submit", name="Login", value="Login")

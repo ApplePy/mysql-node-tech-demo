@@ -1,0 +1,27 @@
+extends layout
+
+block content
+    navbar
+        div.container-fluid
+            div.navbar-header
+                button.navbar-toggle(data-toggle = "collapse", data-target = "#navbar")
+                    span.icon-bar
+                    span.icon-bar
+                    span.icon-bar
+                a.navbar-brand(href = '#')
+                    img(src = "/images/apolloLogo.png", alt = "Apollo Logo")
+            div.collapse(class = "navbar-collapse", id = "#navbar")
+                ul.nav(class = "nav-bar")
+                    li Welcome, {{currentuser}}
+                    li
+                        a(href = "/settings")
+                            span.glyphicon(class = "glyphicon-cog")
+                ul.nav(class = "navbar-nav navbar-right")
+                    li Suggested Track: {{suggestedTrack}}
+    div.container-fluid(class = "text-center")
+        div.row(class = "content")
+            div.col-sm-10
+                p Track area
+            div.col-sm-2(class = "sidenav")
+                div.well
+                    p Playlists
