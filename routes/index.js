@@ -14,11 +14,11 @@ router.route('/create-user').get(function(req, res){
     res.render('create-user', {title: 'Create User'});
 });
 
-router.route('/login').get(function(req, res){
+router.route('/welcome').get(function(req, res){
     res.render('welcome', {title: 'Welcome'});
 });
 
-router.get('/settings', function(req, res){
+router.route('/settings').get(function(req, res){
     res.render('settings', {title: 'Settings'});
 });
 
