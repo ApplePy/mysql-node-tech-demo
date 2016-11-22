@@ -1,0 +1,26 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.vertical-center {
+  min-height: 80%;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spaceBox {
+  height: 20px;
+  width: 100%;
+}
+
+.initialButton {
+  width: 50%;
+  align-items: center;
+}
