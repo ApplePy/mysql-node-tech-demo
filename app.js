@@ -24,6 +24,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/login', routes);
+app.use('/create-user', routes);
 
 
 // catch 404 and forward to error handler
