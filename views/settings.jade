@@ -1,0 +1,13 @@
+extends layout
+
+block navbar
+
+block content
+    form(method="post")
+        label Change Password
+        input(type="password", name= "password", placeholder="New password")
+        br
+        br
+        input(type="submit", name="ChangePassword", value="Change Password")
+        label Delete Account
+        input(type="submit", name="DeleteAccount", value="Delete Account")

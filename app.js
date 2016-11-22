@@ -26,6 +26,7 @@ app.use('/', routes);
 app.use('/login', routes);
 app.use('/create-user', routes);
 app.use('/welcome', routes);
+app.use('/settings', routes);
 
 
 // catch 404 and forward to error handler

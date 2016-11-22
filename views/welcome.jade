@@ -1,6 +1,6 @@
 extends layout
 
-block content
+block navbar
     navbar.navbar-default
         div.container-fluid
             div.navbar-header
@@ -8,14 +8,15 @@ block content
                     span.icon-bar
                     span.icon-bar
                     span.icon-bar
-                a.navbar-brand(href = '#') Apollo Music
+                a.navbar-brand(href = 'welcome') Apollo Music
                     //img(src = "/images/apolloLogo.png", alt = "Apollo Logo" class = "fillWidth")
             div.collapse(class = "navbar-collapse", id = "#navbar")
                 ul.nav(class = "nav-bar")
                     p.navbar-text Welcome, {{currentuser}}
-                    button(class = "btn btn-default navbar-btn" type="button")
+                    button(class = "btn btn-default navbar-btn" type="button" onclick = "location.href = '/settings'")
                         span.glyphicon(class="glyphicon-cog")
                     p.navbar-text(class = "navbar-right") Suggested Track: {{suggestedTrack}}
+block content
     div.container-fluid(class = "text-center")
         div.row(class = "content")
             div.col-sm-10
@@ -23,4 +24,8 @@ block content
             div.col-sm-2(class = "sidenav")
                 div.well
                     p Playlists
-    footer.container-fluid(class = "text-center") Footer Stuff
+    footer.container-fluid(class = "text-center")
+        audio
+            controls
+            source(src = "" type = "audio/mpeg")
+

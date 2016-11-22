@@ -18,4 +18,8 @@ router.get('/welcome', function(req, res){
     res.render('welcome', {title: 'Welcome'});
 });
 
+router.get('/settings', function(req, res){
+    res.render('settings', {title: 'Settings'});
+});
+
 module.exports = router;
