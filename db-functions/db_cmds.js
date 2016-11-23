@@ -8,11 +8,11 @@ var db = require('../db');
  *
  * @param userid            The user ID from which to retrieve the suggested track.
  * @param successCallback   function(trackID, trackName, artistName, musicgroupName) to be called when command succeeds.
- * @param failureCallback   function() to be called when command fails. Contains error text.
+ * @param failureCallback   function() to be called when command fails.
  */
 exports.suggestedTrack = function (userid, successCallback, failureCallback) {
 
-    // Call failure callback on failure or no results, call successcallback with results if success.
+    // Call failure callback on failure or no results, call successCallback with results if success.
     var cb = function(error, results) {
         if (error || results.length == 0) {
             failureCallback();
@@ -46,7 +46,13 @@ exports.suggestedTrack = function (userid, successCallback, failureCallback) {
         cb);
 };
 
-// Login user
+/** Login user
+ *
+ * @param username          The username of the logging in user.
+ * @param password          The password of the logging in user.
+ * @param successCallback   function(userID) to be called when command succeeds.
+ * @param failureCallback   function() to be called when command fails.
+ */
 exports.loginUser = function(username, password, successCallback, failureCallback){
 
     // Call successCallback with userID if success, call failureCallback if false
@@ -79,7 +85,7 @@ exports.loginUser = function(username, password, successCallback, failureCallbac
  * @param prefFirstName     The requested first name.
  * @param lastName          The requested last name.
  * @param successCallback   function(trackID, trackName, artistName, musicgroupName) to be called when command succeeds.
- * @param failureCallback   function() to be called when command fails. Contains error text.
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
  */
 exports.createUser = function(username, password, prefFirstName, lastName, successCallback, failureCallback){
     // Call loginUser to retrieve User ID on create user success, call failureCallback with a message otherwise
@@ -104,14 +110,13 @@ exports.createUser = function(username, password, prefFirstName, lastName, succe
         cbmiddle1);
 };
 
-
 /** Get user first name.
  *
  * @param userid            The userid to retrieve first and last name for.
- * @param successCallback   function(firstName, lastName) to be called when command succeeds.
+ * @param successCallback   function(firstName, lastName, username) to be called when command succeeds.
  * @param failureCallback   function(error) to be called when command fails. Contains error text.
  */
-exports.getUserFullName = function(userid, successCallback, failureCallback) {
+exports.getUserFullNameAndUsername = function(userid, successCallback, failureCallback) {
     // Call loginUser to retrieve User ID on create user success, call failureCallback with a message otherwise
     var cb = function(error, results){
         if (error) {
@@ -123,14 +128,42 @@ exports.getUserFullName = function(userid, successCallback, failureCallback) {
         else {
             // Apply msg, since loginuser cb doesn't take an arg
             var failure = function() {failureCallback("Undefined error.")};
-            successCallback(results[0].prefFirstName, results[0].lastName);
+            successCallback(results[0].prefFirstName, results[0].lastName, results[0].username);
         }
     };
 
     // Get user's full name
     db.query({
-            sql: "SELECT prefFirstName, lastName FROM user WHERE userid = ?",
+            sql: "SELECT prefFirstName, lastName, username FROM user WHERE userid = ?",
             values: [userid]
+        },
+        cb);
+};
+
+/** Update user with new password.
+ *
+ * @param userid            The userID to update.
+ * @param password          The new password.
+ * @param successCallback   function() to be called when command succeeds.
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.updateUserPassword = function(userid, password, successCallback, failureCallback) {
+    // Call successCallback on update success, call failureCallback with a message otherwise
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else {
+            successCallback();
+        }
+    };
+
+    // Update user with new password
+    // TODO: Password hashing?
+    db.query({
+            sql: "UPDATE user(password) " +
+            "VALUES(?) WHERE userid = ?",
+            values: [userid, password]
         },
         cb);
 };
