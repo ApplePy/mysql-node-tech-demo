@@ -9,8 +9,10 @@ block content
                         button.btn(class = "btn-default dropdown-toggle" type="button" id="chooseTrackDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true") List tracks...
                             span.caret
                         ul.dropdown-menu(aria-labelledby="chooseTrackDropdown")
-                            li(href="/alltracks") All tracks (personal and group)
-                            li(href="/mytracks") Only my tracks
+                            li
+                                a(href="/api/alltracks") All tracks (personal and group)
+                            li
+                                a(href="/api/mytracks") Only my tracks
 
                 div.row
                     p Track 1
@@ -26,6 +28,7 @@ block content
                         p Playlist 2
                     div.row
                         p Playlist 3
+
     footer.container-fluid(class = "text-center")
         audio
             controls

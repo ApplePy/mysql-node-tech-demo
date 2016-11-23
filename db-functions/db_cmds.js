@@ -60,7 +60,7 @@ exports.createUser = function(username, password, prefFirstName, lastName, succe
     // Call loginUser to retrieve User ID on create user success, call failureCallback with a message otherwise
     var cbmiddle1 = function(error, results){
         if (error) {
-            failureCallback('Create user failed.');
+            failureCallback(error);
         }
         else {
             var failure = function() {failureCallback("Undefined error.")};     // Apply msg, since loginuser cb doesn't take an arg

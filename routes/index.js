@@ -79,7 +79,7 @@ router.route('/create-user')
     .post(function(req, res) {
         var username = req.body.username;
         var password = req.body.password;
-        var firstname = req.body.prefFirstname;
+        var firstname = req.body.prefFirstName;
         var lastname = req.body.lastName;
         // Set cookie on success, then redirect to welcome
         var successCallback = function(userid) {
@@ -89,7 +89,7 @@ router.route('/create-user')
 
         // Handle bad create
         var failureCallback = function(message) {
-            res.send(message);   // DEBUG
+            res.render('create-user', {title: 'Create User', error: message});   // DEBUG
         };
 
         // Check credentials
@@ -97,11 +97,15 @@ router.route('/create-user')
     });
 
 router.route('/welcome').get(function(req, res){
-    var cb = function(suggestedTrack) {
-        res.render('welcome', {title: 'Welcome', suggestedTrack: suggestedTrack})
+    var cb = function(error, results) {
+        if (error){
+            res.render('index', {title: 'Apollo'});
+        } else {
+            res.render('welcome', {title: 'Welcome', trackID: results[0].tracks.trackID, trackName: results[0].trackName, artist: results[0].artistName, musicGroup: results[0].musicGroupName});
+        }
     };
 
-    var userid = getUserID(res);
+    var userid = getUserID(req);
     db_cmds.suggestedTrack(userid, cb);
 });
 

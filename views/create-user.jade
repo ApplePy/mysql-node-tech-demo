@@ -29,3 +29,9 @@ block content
                     br
                     br
                     input(type="submit", name="CreateUser", value="Create Account and Login")
+            div.spaceBox
+            if error
+                div.span4(class = "alert alert-danger")
+                    strong Error!
+                    p #{error}
+
