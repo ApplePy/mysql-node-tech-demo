@@ -22,6 +22,7 @@ a {
 
 .initialButton {
   width: 50%;
+  float: left;
 }
 
 /* Remove the navbar's default margin-bottom and rounded borders */

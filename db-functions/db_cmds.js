@@ -47,8 +47,8 @@ exports.loginUser = function(username, password, successCallback, failureCallbac
 };
 
 exports.createUser = function(username, password, prefFirstName, lastName, successCallback, failureCallback){
-    var cbmiddle1 = function(whatGoesHereLOL){  // TODO: figure this out
-        if (InsertWorked) {                     // TODO: figure this out
+    var cbmiddle1 = function(error){  // TODO: figure this out
+        if (error) {                     // TODO: figure this out
             var failure = function() {failureCallback("Undefined error.")};     // Application of arguments
             exports.loginUser(username, password, successCallback, failure);
         }

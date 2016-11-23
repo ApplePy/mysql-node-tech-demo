@@ -1,11 +1,11 @@
 var express = require('express');
 var router = express.Router();
-var db_cmds = require('db_cmds');
+var db_cmds = require('../db-functions/db_cmds');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 
-var getUserID = function(res) {
+var getUserID = function(req) {
     var jsoncookie = cookieParser.JSONCookie(req.cookies);
     if (jsoncookie != undefined)
         return jsoncookie.userid;
@@ -72,9 +72,9 @@ router.route('/create-user')
     .post(function(req, res) {
         var username = req.body.username;
         var password = req.body.password;
-        var firstname = req.body.firstname;
-        var lastname = req.body.lastname;
-
+        var firstname = req.body.prefFirstname;
+        var lastname = req.body.lastName;
+        console.log(username);
         // Set cookie on success, then redirect to welcome
         var successCallback = function(userid) {
             res.cookie("apollo", "{userid: "+ userid +"}", {overwrite: true, maxAge: 1000 * 60 * 60 * 24}); // 24 hour expiry
