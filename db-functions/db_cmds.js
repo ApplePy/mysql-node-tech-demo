@@ -167,3 +167,37 @@ exports.updateUserPassword = function(userid, password, successCallback, failure
         },
         cb);
 };
+
+/** Get all tracks for user.
+ *
+ * @param userid            The userID to check.
+ * @param successCallback   function(result) to be called when command succeeds. 'result' structure: [{trackName, length, artistName, albumName}, {...}]
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.getAllUserTracks = function(userid, successCallback, failureCallback) {
+    // Call the appropriate callback
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else if (results.length == 0) {
+            failureCallback("User has no tracks.");
+        }
+        else {
+            successCallback(results);
+        }
+    };
+
+    // Get user's tracks
+    db.query({
+            sql: "SELECT trackName, length, artistName, albumName " +
+            "FROM track " +
+            "JOIN usertracks ON track.trackID = usertracks.trackID " +
+            "JOIN albumordering ON track.trackID = albumordering.track " +
+            "JOIN album ON albumordering.album = album.albumID " +
+            "JOIN artist ON album.artist=artist.artistID " +
+            "WHERE usertracks.userID = ?",
+            values: [userid]
+        },
+        cb);
+};
