@@ -4,8 +4,25 @@
 
 var db = require('../db');
 
-// Retrieve suggested track
-exports.suggestedTrack = function (userid, cb) {
+/** Get suggested user track.
+ *
+ * @param userid            The user ID from which to retrieve the suggested track.
+ * @param successCallback   function(trackID, trackName, artistName, musicgroupName) to be called when command succeeds.
+ * @param failureCallback   function() to be called when command fails. Contains error text.
+ */
+exports.suggestedTrack = function (userid, successCallback, failureCallback) {
+
+    // Call failure callback on failure or no results, call successcallback with results if success.
+    var cb = function(error, results) {
+        if (error || results.length == 0) {
+            failureCallback();
+        }
+        else {
+            var res = results[0];
+            successCallback(res.trackID, res.trackName, res.artistName, res.musicgroupName);
+        }
+    };
+
     db.query({
             sql: "SELECT track.trackID, trackName, artistName, musicgroupName " +
             "FROM musicgroupmembership AS gm " +
@@ -55,7 +72,15 @@ exports.loginUser = function(username, password, successCallback, failureCallbac
         cbmiddle);
 };
 
-// Create user
+/** Create user.
+ *
+ * @param username          The requested new username.
+ * @param password          The requested new password.
+ * @param prefFirstName     The requested first name.
+ * @param lastName          The requested last name.
+ * @param successCallback   function(trackID, trackName, artistName, musicgroupName) to be called when command succeeds.
+ * @param failureCallback   function() to be called when command fails. Contains error text.
+ */
 exports.createUser = function(username, password, prefFirstName, lastName, successCallback, failureCallback){
     // Call loginUser to retrieve User ID on create user success, call failureCallback with a message otherwise
     var cbmiddle1 = function(error, results){
@@ -63,7 +88,8 @@ exports.createUser = function(username, password, prefFirstName, lastName, succe
             failureCallback(error);
         }
         else {
-            var failure = function() {failureCallback("Undefined error.")};     // Apply msg, since loginuser cb doesn't take an arg
+            // Apply msg, since loginuser cb doesn't take an arg
+            var failure = function() {failureCallback("Undefined error.")};
             exports.loginUser(username, password, successCallback, failure);
         }
     };
@@ -76,4 +102,35 @@ exports.createUser = function(username, password, prefFirstName, lastName, succe
             values: [username, password, prefFirstName, lastName]
         },
         cbmiddle1);
+};
+
+
+/** Get user first name.
+ *
+ * @param userid            The userid to retrieve first and last name for.
+ * @param successCallback   function(firstName, lastName) to be called when command succeeds.
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.getUserFullName = function(userid, successCallback, failureCallback) {
+    // Call loginUser to retrieve User ID on create user success, call failureCallback with a message otherwise
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else if (results.length == 0) {
+            failureCallback("User not found.");
+        }
+        else {
+            // Apply msg, since loginuser cb doesn't take an arg
+            var failure = function() {failureCallback("Undefined error.")};
+            successCallback(results[0].prefFirstName, results[0].lastName);
+        }
+    };
+
+    // Get user's full name
+    db.query({
+            sql: "SELECT prefFirstName, lastName FROM user WHERE userid = ?",
+            values: [userid]
+        },
+        cb);
 };
