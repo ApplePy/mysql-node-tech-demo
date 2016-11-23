@@ -114,10 +114,10 @@ exports.createUser = function(username, password, prefFirstName, lastName, succe
 /** Get user first name.
  *
  * @param userid            The userid to retrieve first and last name for.
- * @param successCallback   function(firstName, lastName) to be called when command succeeds.
+ * @param successCallback   function(firstName, lastName, username) to be called when command succeeds.
  * @param failureCallback   function(error) to be called when command fails. Contains error text.
  */
-exports.getUserFullName = function(userid, successCallback, failureCallback) {
+exports.getUserFullNameAndUsername = function(userid, successCallback, failureCallback) {
     // Call loginUser to retrieve User ID on create user success, call failureCallback with a message otherwise
     var cb = function(error, results){
         if (error) {
@@ -129,13 +129,13 @@ exports.getUserFullName = function(userid, successCallback, failureCallback) {
         else {
             // Apply msg, since loginuser cb doesn't take an arg
             var failure = function() {failureCallback("Undefined error.")};
-            successCallback(results[0].prefFirstName, results[0].lastName);
+            successCallback(results[0].prefFirstName, results[0].lastName, results[0].username);
         }
     };
 
     // Get user's full name
     db.query({
-            sql: "SELECT prefFirstName, lastName FROM user WHERE userid = ?",
+            sql: "SELECT prefFirstName, lastName, username FROM user WHERE userid = ?",
             values: [userid]
         },
         cb);
