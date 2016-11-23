@@ -1,14 +1,16 @@
 var express = require('express');
 var router = express.Router();
 var db_cmds = require('../db-functions/db_cmds');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
 
 
+// Sets the user ID cookie
+// TODO: Set the cookie as signed
 var setCookie = function(res, userid) {
     res.cookie("userid", userid, {overwrite: true, maxAge: 1000 * 60 * 60 * 24}); // 24 hour expiry
 };
 
+// Get user ID from cookie
+// TODO: Decrypt cookie once signed
 var getUserID = function(req) {
     if (req.cookies != undefined) {
         if (req.cookies.userid != undefined)
@@ -18,6 +20,7 @@ var getUserID = function(req) {
 };
 
 // Redirect if logged in
+// TODO: Verify that the user ID actually exists
 var loggedInRedirect = function(res, req) {
     var userid = getUserID(req);
     if (userid != undefined) {
