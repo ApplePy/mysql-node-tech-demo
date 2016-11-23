@@ -110,7 +110,6 @@ exports.createUser = function(username, password, prefFirstName, lastName, succe
         cbmiddle1);
 };
 
-
 /** Get user first name.
  *
  * @param userid            The userid to retrieve first and last name for.
@@ -137,6 +136,34 @@ exports.getUserFullNameAndUsername = function(userid, successCallback, failureCa
     db.query({
             sql: "SELECT prefFirstName, lastName, username FROM user WHERE userid = ?",
             values: [userid]
+        },
+        cb);
+};
+
+/** Update user with new password.
+ *
+ * @param userid            The userID to update.
+ * @param password          The new password.
+ * @param successCallback   function() to be called when command succeeds.
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.updateUserPassword = function(userid, password, successCallback, failureCallback) {
+    // Call successCallback on update success, call failureCallback with a message otherwise
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else {
+            successCallback();
+        }
+    };
+
+    // Update user with new password
+    // TODO: Password hashing?
+    db.query({
+            sql: "UPDATE user(password) " +
+            "VALUES(?) WHERE userid = ?",
+            values: [userid, password]
         },
         cb);
 };
