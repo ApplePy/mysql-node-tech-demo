@@ -1,36 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var db_cmds = require('../db-functions/db_cmds');
-
-
-// Sets the user ID cookie
-// TODO: Set the cookie as signed
-var setCookie = function(res, userid) {
-    res.cookie("userid", userid, {overwrite: true, maxAge: 1000 * 60 * 60 * 24}); // 24 hour expiry
-};
-
-// Get user ID from cookie
-// TODO: Decrypt cookie once signed
-var getUserID = function(req) {
-    if (req.cookies != undefined) {
-        if (req.cookies.userid != undefined)
-            return req.cookies.userid;
-    }
-    else return undefined;
-};
-
-// Redirect if logged in
-// TODO: Verify that the user ID actually exists
-var loggedInRedirect = function(res, req) {
-    var userid = getUserID(req);
-    if (userid != undefined) {
-        res.redirect('/welcome');
-        return true;
-    }
-    else {
-        return false;
-    }
-};
+var common_fcns = require('../common/common_router_fcns');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -39,7 +10,7 @@ router.get('/', function(req, res, next) {
     };
 
     // Redirect if logged in
-    if (!loggedInRedirect(res, req)) cb();
+    if (!common_fcns.loggedInRedirect(res, req)) cb();
 });
 
 router.route('/login')
@@ -49,7 +20,7 @@ router.route('/login')
         };
 
         // Redirect if logged in
-        if (!loggedInRedirect(res, req)) cb();
+        if (!common_fcns.loggedInRedirect(res, req)) cb();
     })
     .post(function (req, res) {
         var username = req.body.username;
@@ -57,7 +28,7 @@ router.route('/login')
 
         // Set cookie on success, then redirect to welcome
         var successCallback = function(userid) {
-            setCookie(res, userid);
+            common_fcns.setCookie(res, userid);
             res.redirect('/welcome');
         };
 
@@ -77,7 +48,7 @@ router.route('/create-user')
         };
 
         // Redirect if logged in
-        if (!loggedInRedirect(res, req)) cb();
+        if (!common_fcns.loggedInRedirect(res, req)) cb();
     })
     .post(function(req, res) {
         var username = req.body.username;
@@ -86,7 +57,7 @@ router.route('/create-user')
         var lastname = req.body.lastName;
         // Set cookie on success, then redirect to welcome
         var successCallback = function(userid) {
-            setCookie(res, userid);
+            common_fcns.setCookie(res, userid);
             res.redirect('/welcome');
         };
 
@@ -135,18 +106,20 @@ router.route('/welcome').get(function(req, res){
         res.render('welcome', {title: 'Welcome', fName: prefFirstName, lName:lastName, username: username, trackID: trackID, trackName: trackName, artistName: artistName, musicGroup:musicGroup});
     }
 
-    var userid = getUserID(req);
+    var userid = common_fcns.getUserID(req);
     db_cmds.suggestedTrack(userid, callbackSuggestionSucceeded, callbackSuggestionFailed);
 });
 
 router.route('/settings').get(function(req, res){
-    var cb = function() {
-        res.render('settings', {title: 'Settings', });
+    /*var cb = function() {
+        res.render('settings', {title: 'Settings'});
     };
 
-    var userid = getUserID(res);
+    var userid = common_fcns.getUserID(res);
+    if(common_fcns.loggedInRedirect(res,req)) {
 
-    cb();   // NOTE: For now...
+    }*/
+    common_fcns.GetSuggestedTrackAndUserName(res,req,'settings');
 });
 
 module.exports = router;
