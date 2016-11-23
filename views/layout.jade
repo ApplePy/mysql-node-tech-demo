@@ -23,7 +23,7 @@ html
           div.collapse(class = "navbar-collapse", id = "#navbar")
             ul.nav(class = "nav-bar")
                 if !errUser
-                  p.navbar-text Welcome, #{fName} #{lName}
+                  p.navbar-text Welcome, #{fName} #{lName} (#{username})
                 else
                   p.navbar-text Welcome, #{errUser}
                 button(class = "btn btn-default navbar-btn" type="button" onclick = "location.href = '/settings'")

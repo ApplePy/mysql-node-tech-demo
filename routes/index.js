@@ -104,21 +104,21 @@ router.route('/welcome').get(function(req, res){
         var stashFail = function(){
             userFailedSuggestionSucceeded(trackID, trackName, artistName, musicGroup)
         }
-        db_cmds.getUserFullName(userid, stash, stashFail);
+        db_cmds.getUserFullNameAndUsername(userid, stash, stashFail);
     }
     var callbackSuggestionFailed = function() {
         var str = 'No suggested song found.';
         var stashDoubleFail = function(){
             bothFailed(str);
         }
-        var stashFail = function(prefFirstName, lastName){
-            suggestionFailedUserSucceded(prefFirstName, lastName, str);
+        var stashFail = function(prefFirstName, lastName, username){
+            suggestionFailedUserSucceded(prefFirstName, lastName, username, str);
         }
-        db_cmds.getUserFullName(userid, stashFail, stashDoubleFail);
+        db_cmds.getUserFullNameAndUsername(userid, stashFail, stashDoubleFail);
     }
 
-    var suggestionFailedUserSucceded = function(prefFirstName, lastName, msg){
-        res.render('welcome', {title: 'Welcome', fName: prefFirstName, lName:lastName, errSuggTrack:msg});
+    var suggestionFailedUserSucceded = function(prefFirstName, lastName, username, msg){
+        res.render('welcome', {title: 'Welcome', fName: prefFirstName, lName:lastName, username: username, errSuggTrack:msg});
     }
 
     var bothFailed = function(msg){
@@ -128,8 +128,8 @@ router.route('/welcome').get(function(req, res){
         res.render('welcome', {title: 'Welcome', errUser: "User not found", trackID: trackID, trackName: trackName, artistName: artistName, musicGroup:musicGroup});
     }
 
-    var bothSucceeded = function(prefFirstName, lastName, trackID, trackName, artistName, musicGroup){
-        res.render('welcome', {title: 'Welcome', fName: prefFirstName, lName:lastName, trackID: trackID, trackName: trackName, artistName: artistName, musicGroup:musicGroup});
+    var bothSucceeded = function(prefFirstName, lastName, username, trackID, trackName, artistName, musicGroup){
+        res.render('welcome', {title: 'Welcome', fName: prefFirstName, lName:lastName, username: username, trackID: trackID, trackName: trackName, artistName: artistName, musicGroup:musicGroup});
     }
 
     var userid = getUserID(req);
@@ -137,11 +137,12 @@ router.route('/welcome').get(function(req, res){
 });
 
 router.route('/settings').get(function(req, res){
-    var cb = function(suggestedTrack) {
-        res.render('settings', {title: 'Settings', suggestedTrack: suggestedTrack});
+    var cb = function() {
+        res.render('settings', {title: 'Settings', });
     };
 
     var userid = getUserID(res);
+
     cb();   // NOTE: For now...
 });
 
