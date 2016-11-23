@@ -5,16 +5,21 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 
+var setCookie = function(res, userid) {
+    res.cookie("userid", userid, {overwrite: true, maxAge: 1000 * 60 * 60 * 24}); // 24 hour expiry
+};
+
 var getUserID = function(req) {
-    var jsoncookie = cookieParser.JSONCookie(req.cookies);
-    if (jsoncookie != undefined)
-        return jsoncookie.userid;
+    if (req.cookies != undefined) {
+        if (req.cookies.userid != undefined)
+            return req.cookies.userid;
+    }
     else return undefined;
 };
 
 // Redirect if logged in
-var loggedInRedirect = function(res) {
-    var userid = getUserID(res);
+var loggedInRedirect = function(res, req) {
+    var userid = getUserID(req);
     if (userid != undefined) {
         res.redirect('/welcome');
         return true;
@@ -31,7 +36,7 @@ router.get('/', function(req, res, next) {
     };
 
     // Redirect if logged in
-    if (!loggedInRedirect(res)) cb();
+    if (!loggedInRedirect(res, req)) cb();
 });
 
 router.route('/login')
@@ -41,7 +46,7 @@ router.route('/login')
         };
 
         // Redirect if logged in
-        if (!loggedInRedirect(res)) cb();
+        if (!loggedInRedirect(res, req)) cb();
     })
     .post(function (req, res) {
         var username = req.body.username;
@@ -49,7 +54,7 @@ router.route('/login')
 
         // Set cookie on success, then redirect to welcome
         var successCallback = function(userid) {
-            res.cookie("apollo", "{userid: "+ userid +"}", {overwrite: true, maxAge: 1000 * 60 * 60 * 24}); // 24 hour expiry
+            setCookie(res, userid);
             res.redirect('/welcome');
         };
 
@@ -69,7 +74,7 @@ router.route('/create-user')
         };
 
         // Redirect if logged in
-        if (!loggedInRedirect(res)) cb();
+        if (!loggedInRedirect(res, req)) cb();
     })
     .post(function(req, res) {
         var username = req.body.username;
@@ -78,7 +83,7 @@ router.route('/create-user')
         var lastname = req.body.lastName;
         // Set cookie on success, then redirect to welcome
         var successCallback = function(userid) {
-            res.cookie("apollo", "{userid: "+ userid +"}", {overwrite: true, maxAge: 1000 * 60 * 60 * 24}); // 24 hour expiry
+            setCookie(res, userid);
             res.redirect('/welcome');
         };
 
