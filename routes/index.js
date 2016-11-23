@@ -55,7 +55,7 @@ router.route('/login')
 
         // Handle bad credentials
         var failureCallback = function() {
-            return res.send(message);
+            res.send("error");   // DEBUG
         };
 
         // Check credentials
@@ -84,7 +84,7 @@ router.route('/create-user')
 
         // Handle bad create
         var failureCallback = function(message) {
-            return res.send(message);
+            res.send(message);   // DEBUG
         };
 
         // Check credentials
@@ -102,10 +102,11 @@ router.route('/welcome').get(function(req, res){
 
 router.route('/settings').get(function(req, res){
     var cb = function(suggestedTrack) {
-        res.render('settings', {title: 'Settings'});
+        res.render('settings', {title: 'Settings', suggestedTrack: suggestedTrack});
     };
 
     var userid = getUserID(res);
+    cb();   // NOTE: For now...
 });
 
 module.exports = router;

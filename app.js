@@ -43,7 +43,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-db.connect(db.MODE_TEST, function(err) {
+db.connect(db.MODE_PRODUCTION, function(err) {
     if (err) {
         console.log('Unable to connect to MySQL.');
         process.exit(1);
