@@ -97,16 +97,43 @@ router.route('/create-user')
     });
 
 router.route('/welcome').get(function(req, res){
-    var cb = function(error, results) {
-        if (error){
-            res.render('index', {title: 'Apollo'});
-        } else {
-            res.render('welcome', {title: 'Welcome', trackID: results[0].tracks.trackID, trackName: results[0].trackName, artist: results[0].artistName, musicGroup: results[0].musicGroupName});
+    var callbackSuggestionSucceeded = function(trackID, trackName, artistName, musicGroup){
+        var stash = function(prefFirstName, lastName){
+            bothSucceeded(prefFirstName, lastName, trackID, trackName, artistName, musicGroup)
         }
-    };
+        var stashFail = function(){
+            userFailedSuggestionSucceeded(trackID, trackName, artistName, musicGroup)
+        }
+        db_cmds.getUserFullName(userid, stash, stashFail);
+    }
+    var callbackSuggestionFailed = function() {
+        var str = 'No suggested song found.';
+        var stashDoubleFail = function(){
+            bothFailed(str);
+        }
+        var stashFail = function(prefFirstName, lastName){
+            suggestionFailedUserSucceded(prefFirstName, lastName, str);
+        }
+        db_cmds.getUserFullName(userid, stashFail, stashDoubleFail);
+    }
+
+    var suggestionFailedUserSucceded = function(prefFirstName, lastName, msg){
+        res.render('welcome', {title: 'Welcome', fName: prefFirstName, lName:lastName, errSuggTrack:msg});
+    }
+
+    var bothFailed = function(msg){
+        res.render('welcome', {title: 'Welcome', errUser: "User not found", errSuggTrack: msg});
+    }
+    var userFailedSuggestionSucceeded = function(trackID, trackName, artistName, musicGroup){
+        res.render('welcome', {title: 'Welcome', errUser: "User not found", trackID: trackID, trackName: trackName, artistName: artistName, musicGroup:musicGroup});
+    }
+
+    var bothSucceeded = function(prefFirstName, lastName, trackID, trackName, artistName, musicGroup){
+        res.render('welcome', {title: 'Welcome', fName: prefFirstName, lName:lastName, trackID: trackID, trackName: trackName, artistName: artistName, musicGroup:musicGroup});
+    }
 
     var userid = getUserID(req);
-    db_cmds.suggestedTrack(userid, cb);
+    db_cmds.suggestedTrack(userid, callbackSuggestionSucceeded, callbackSuggestionFailed);
 });
 
 router.route('/settings').get(function(req, res){

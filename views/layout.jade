@@ -22,8 +22,14 @@ html
               //img(src = "/images/apolloLogo.png", alt = "Apollo Logo" class = "fillWidth")
           div.collapse(class = "navbar-collapse", id = "#navbar")
             ul.nav(class = "nav-bar")
-              p.navbar-text Welcome, #{currentUser}
-              button(class = "btn btn-default navbar-btn" type="button" onclick = "location.href = '/settings'")
-                span.glyphicon(class="glyphicon-cog")
-              p.navbar-text(class = "navbar-right") Suggested Track: #{trackID} | #{trackName} | #{artistName} | #{musicGroup}
+                if !errUser
+                  p.navbar-text Welcome, #{fName} #{lName}
+                else
+                  p.navbar-text Welcome, #{errUser}
+                button(class = "btn btn-default navbar-btn" type="button" onclick = "location.href = '/settings'")
+                  span.glyphicon(class="glyphicon-cog")
+                if !errSuggTrack
+                  p.navbar-text(class = "navbar-right") Suggested Track: #{trackID} | #{trackName} | #{artistName} | #{musicGroup}
+                else
+                  p.navbar-text(class = "navbar-right") Suggested Track: #{errSuggTrack}
     block content
