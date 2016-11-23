@@ -28,13 +28,15 @@ exports.suggestedTrack = function (userid, cb) {
 };
 
 exports.loginUser = function(username, password, successCallback, failureCallback){
-    var cbmiddle = function(whatGoesHereLOL){           // TODO: figure this out
-        if (InsertWorked) {                             // TODO: figure this out
-            var userid = "Where does this come from?";  // TODO: figure this out
-            successCallback(userid);
+    var cbmiddle = function(error, results){           // TODO: figure this out
+        if (error) {                             // TODO: figure this out
+            failureCallback(error);
+            //var userid = "Where does this come from?";  // TODO: figure this out
+            //successCallback(userid);
         }
         else
-            failureCallback();
+            console.log(results);
+            //failureCallback();
     };
 
     db.query(
@@ -47,13 +49,15 @@ exports.loginUser = function(username, password, successCallback, failureCallbac
 };
 
 exports.createUser = function(username, password, prefFirstName, lastName, successCallback, failureCallback){
+    console.log('entered createUser');
     var cbmiddle1 = function(error){  // TODO: figure this out
         if (error) {                     // TODO: figure this out
-            var failure = function() {failureCallback("Undefined error.")};     // Application of arguments
-            exports.loginUser(username, password, successCallback, failure);
+            //failureCallback('failed create user');           // TODO: figure this out
+            console.log('failure callback called create user')
         }
         else {
-            failureCallback(message);           // TODO: figure this out
+            var failure = function() {failureCallback("Undefined error.")};     // Application of arguments
+            exports.loginUser(username, password, successCallback, failure);
         }
     };
 

@@ -54,7 +54,9 @@ router.route('/login')
         };
 
         // Handle bad credentials
-        var failureCallback = function() {/*TODO: fill in*/};
+        var failureCallback = function() {
+            return res.send(message);
+        };
 
         // Check credentials
         db_cmds.loginUser(username, password, successCallback, failureCallback);
@@ -74,7 +76,6 @@ router.route('/create-user')
         var password = req.body.password;
         var firstname = req.body.prefFirstname;
         var lastname = req.body.lastName;
-        console.log(username);
         // Set cookie on success, then redirect to welcome
         var successCallback = function(userid) {
             res.cookie("apollo", "{userid: "+ userid +"}", {overwrite: true, maxAge: 1000 * 60 * 60 * 24}); // 24 hour expiry
@@ -82,7 +83,9 @@ router.route('/create-user')
         };
 
         // Handle bad create
-        var failureCallback = function(message) {/*TODO: fill in*/};
+        var failureCallback = function(message) {
+            return res.send(message);
+        };
 
         // Check credentials
         db_cmds.createUser(username, password, firstname, lastname, successCallback, failureCallback);
