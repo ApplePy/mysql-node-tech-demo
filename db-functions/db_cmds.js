@@ -4,6 +4,7 @@
 
 var db = require('../db');
 
+// Retrieve suggested track
 exports.suggestedTrack = function (userid, cb) {
     db.query({
             sql: "SELECT track.trackID, trackName, artistName, musicgroupName " +
@@ -28,16 +29,22 @@ exports.suggestedTrack = function (userid, cb) {
         cb);
 };
 
+// Login user
 exports.loginUser = function(username, password, successCallback, failureCallback){
-    var cbmiddle = function(error, results){           // TODO: figure this out
-        if (error) {                             // TODO: figure this out
+
+    // Call successCallback with userID if success, call failureCallback if false
+    var cbmiddle = function(error, results){
+        if (error) {
             failureCallback();
         }
-        else
+        else {
             var userid = results[0].userID;
             successCallback(userid);
+        }
     };
 
+    // Query for user
+    // TODO: Password hashing?
     db.query({
             sql: "SELECT userID " +
             "FROM user " +
@@ -48,13 +55,15 @@ exports.loginUser = function(username, password, successCallback, failureCallbac
         cbmiddle);
 };
 
+// Create user
 exports.createUser = function(username, password, prefFirstName, lastName, successCallback, failureCallback){
+    // Call loginUser to retrieve User ID on create user success, call failureCallback with a message otherwise
     var cbmiddle1 = function(error, results){
         if (error) {
             failureCallback('Create user failed.');
         }
         else {
-            var failure = function() {failureCallback("Undefined error.")};     // Application of arguments
+            var failure = function() {failureCallback("Undefined error.")};     // Apply msg, since loginuser cb doesn't take an arg
             exports.loginUser(username, password, successCallback, failure);
         }
     };
