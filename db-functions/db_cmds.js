@@ -71,7 +71,7 @@ exports.createUser = function(username, password, prefFirstName, lastName, succe
     // Insert user
     // TODO: Password hashing?
     db.query({
-            sql: "INSERT INTO tracks(username, password, prefFirstName, lastName) " +
+            sql: "INSERT INTO user(username, password, prefFirstName, lastName) " +
             "VALUES(?, ?, ?, ?)",
             values: [username, password, prefFirstName, lastName]
         },
