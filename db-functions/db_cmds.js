@@ -190,7 +190,7 @@ exports.getAllUserTracks = function(userid, successCallback, failureCallback) {
 
     // Get user's tracks
     db.query({
-            sql: "SELECT trackName, length, artistName, albumName " +
+            sql: "SELECT trackName, length AS trackLength, artistName, albumName " +
             "FROM track " +
             "JOIN usertracks ON track.trackID = usertracks.trackID " +
             "JOIN albumordering ON track.trackID = albumordering.track " +

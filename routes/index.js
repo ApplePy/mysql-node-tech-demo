@@ -83,7 +83,6 @@ router.route('/settings')
 
 router.route('/api/mytracks')
     .get(function(req, res){
-        common_fcns.GetSuggestedTrackAndUserName(res,req,'welcome');
         common_fcns.getUserTracks(res, req);
     });
 
