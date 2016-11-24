@@ -72,3 +72,14 @@ exports.GetSuggestedTrackAndUserName = function(res, req, pageName){
     var userid = common_fcns.getUserID(req);
     db_cmds.suggestedTrack(userid, callbackSuggestionSucceeded, callbackSuggestionFailed);
 }
+
+exports.getUserTracks = function(req, res){
+    var successCallback = function(results){
+        res.render('welcome', {title: 'Welcome', tracks: JSON.stringify(results)});
+    }
+    var failureCallback = function(msg){
+        res.render('welcome', {title: 'Welcome', trackErr: msg});
+    }
+    var userid = common_fcns.getUserID(req);
+    db_cmds.getAllUserTracks(userid, successCallback, failureCallback);
+}

@@ -1,6 +1,8 @@
 extends layout
 
 block content
+    - var rows = null;
+    - var getTracks = function(){jQuery.ajax({type: 'GET', async: false, url: '/api/mytracks', dataType: 'JSON'}).done(function(resp){rows = resp;});};
     div.container-fluid
         div.row(class = "content")
             div.col-sm-10
@@ -12,14 +14,13 @@ block content
                             li
                                 a(href="/api/alltracks") All tracks (personal and group)
                             li
-                                a(href="/api/mytracks") Only my tracks
+                                button(onclick = getTracks()) Only my tracks
+            if rows != null
+                each track in rows
+                    div.row
+                        p #{track.trackName}  |  #{track.length}  |  #{track.artistName}  |  #{track.albumName}
 
-                div.row
-                    p Track 1
-                div.row
-                    p Track 2
-                div.row
-                    p Track 3
+
             div.col-sm-2(class = "sidenav")
                 div.well
                     div.row
@@ -33,4 +34,3 @@ block content
         audio
             controls
             source(src = "" type = "audio/mpeg")
-

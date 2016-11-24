@@ -70,56 +70,21 @@ router.route('/create-user')
         db_cmds.createUser(username, password, firstname, lastname, successCallback, failureCallback);
     });
 
-router.route('/welcome').get(function(req, res){
-    var callbackSuggestionSucceeded = function(trackID, trackName, artistName, musicGroup){
-        var stash = function(prefFirstName, lastName){
-            bothSucceeded(prefFirstName, lastName, trackID, trackName, artistName, musicGroup)
-        }
-        var stashFail = function(){
-            userFailedSuggestionSucceeded(trackID, trackName, artistName, musicGroup)
-        }
-        db_cmds.getUserFullNameAndUsername(userid, stash, stashFail);
-    }
-    var callbackSuggestionFailed = function() {
-        var str = 'No suggested song found.';
-        var stashDoubleFail = function(){
-            bothFailed(str);
-        }
-        var stashFail = function(prefFirstName, lastName, username){
-            suggestionFailedUserSucceded(prefFirstName, lastName, username, str);
-        }
-        db_cmds.getUserFullNameAndUsername(userid, stashFail, stashDoubleFail);
-    }
+router.route('/welcome')
+    .get(function(req, res){
+    common_fcns.GetSuggestedTrackAndUserName(res,req,'welcome');
 
-    var suggestionFailedUserSucceded = function(prefFirstName, lastName, username, msg){
-        res.render('welcome', {title: 'Welcome', fName: prefFirstName, lName:lastName, username: username, errSuggTrack:msg});
-    }
-
-    var bothFailed = function(msg){
-        res.render('welcome', {title: 'Welcome', errUser: "User not found", errSuggTrack: msg});
-    }
-    var userFailedSuggestionSucceeded = function(trackID, trackName, artistName, musicGroup){
-        res.render('welcome', {title: 'Welcome', errUser: "User not found", trackID: trackID, trackName: trackName, artistName: artistName, musicGroup:musicGroup});
-    }
-
-    var bothSucceeded = function(prefFirstName, lastName, username, trackID, trackName, artistName, musicGroup){
-        res.render('welcome', {title: 'Welcome', fName: prefFirstName, lName:lastName, username: username, trackID: trackID, trackName: trackName, artistName: artistName, musicGroup:musicGroup});
-    }
-
-    var userid = common_fcns.getUserID(req);
-    db_cmds.suggestedTrack(userid, callbackSuggestionSucceeded, callbackSuggestionFailed);
 });
 
-router.route('/settings').get(function(req, res){
-    /*var cb = function() {
-        res.render('settings', {title: 'Settings'});
-    };
+router.route('/settings')
+    .get(function(req, res){
+        common_fcns.GetSuggestedTrackAndUserName(res,req,'settings');
+    });
 
-    var userid = common_fcns.getUserID(res);
-    if(common_fcns.loggedInRedirect(res,req)) {
-
-    }*/
-    common_fcns.GetSuggestedTrackAndUserName(res,req,'settings');
-});
+router.route('/api/mytracks')
+    .get(function(req, res){
+        common_fcns.GetSuggestedTrackAndUserName(res,req,'welcome');
+        common_fcns.getUserTracks(res, req);
+    });
 
 module.exports = router;
