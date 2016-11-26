@@ -201,3 +201,74 @@ exports.getAllUserTracks = function(userid, successCallback, failureCallback) {
         },
         cb);
 };
+
+/** Get the number of users who also have this track (likes).
+ *
+ * @param userid            The user doing the query.
+ * @param trackid           The track being queried about.
+ * @param successCallback   function(likes) to be called when command succeeds.
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.getLikes = function(userid, trackid, successCallback, failureCallback) {
+    // Call the appropriate callback
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else {
+            successCallback(results[0].likes);
+        }
+    };
+
+    // Get user's track's likes
+    db.query({
+            sql: "SELECT COUNT(userID) AS likes " +
+            "FROM usertracks ON user.userID = usertracks.userID " +
+            "WHERE usertracks.userID != ? " +
+            "AND trackID == ?",
+            values: [userid, trackid]
+        },
+        cb);
+};
+
+/** Get tracks that the user does not own, sorted by popularity.
+ * @param userid            The user doing the query.
+ * @param successCallback   function(results) to be called when command succeeds. 'result' structure: [{trackName, length, artistName, albumName, likes}, {...}]
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.getPopularTracks = function(userid, successCallback, failureCallback) {
+    // Call the appropriate callback
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else {
+            successCallback(results);
+        }
+    };
+
+    // NOTE: Inner SELECT finds all tracks that the user has access to, and the outer one gets all the info for those tracks, and counts the "likes"
+    db.query({
+            sql: "SELECT trackName, length AS trackLength, artistName, albumName, COUNT(usertracks.userID) AS likes " +
+            "FROM track " +
+            "JOIN usertracks ON track.trackID = usertracks.trackID " +
+            "JOIN albumordering ON track.trackID = albumordering.track " +
+            "JOIN album ON albumordering.album = album.albumID " +
+            "JOIN artist ON album.artist=artist.artistID " +
+            "WHERE usertracks.userID != ? " +
+            "AND usertracks.trackID IN (" +
+            "SELECT track.trackID " +
+            "FROM track " +
+            "JOIN playlistordering ON track.trackID=playlistordering.trackID " +
+            "JOIN sharedplaylists ON sharedplaylists.playlist=playlistordering.playlistID " +
+            "JOIN musicgroupmembership AS mgm ON mgm.musicgroup=sharedplaylists.musicgroup " +
+            "WHERE mgm.user = ?" +
+            ") " +
+            "GROUP BY usertracks.trackID " +
+            "ORDER BY likes DESC " +
+            "LIMIT 50"
+            ,
+            values: [userid, userid]
+        },
+        cb);
+};
