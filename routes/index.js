@@ -86,4 +86,9 @@ router.route('/api/mytracks')
         common_fcns.getUserTracks(res, req);
     });
 
+router.route('/api/top50tracks')
+    .get(function(req, res){
+        common_fcns.getTop50Tracks(res, req);
+    });
+
 module.exports = router;

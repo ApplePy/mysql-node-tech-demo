@@ -35,8 +35,8 @@ exports.loggedInRedirect = function(res, req) {
 
 exports.GetSuggestedTrackAndUserName = function(res, req, pageName){
     var callbackSuggestionSucceeded = function(trackID, trackName, artistName, musicGroup){
-        var stash = function(prefFirstName, lastName){
-            bothSucceeded(prefFirstName, lastName, trackID, trackName, artistName, musicGroup)
+        var stash = function(prefFirstName, lastName, username){
+            bothSucceeded(prefFirstName, lastName, username, trackID, trackName, artistName, musicGroup)
         }
         var stashFail = function(){
             userFailedSuggestionSucceeded(trackID, trackName, artistName, musicGroup)
@@ -83,4 +83,15 @@ exports.getUserTracks = function(res, req){
     }
     var userid = common_fcns.getUserID(req);
     db_cmds.getAllUserTracks(userid, successCallback, failureCallback);
+}
+
+exports.getTop50Tracks = function(res, req){
+    var successCallback = function(results){
+        res.send(JSON.stringify(results));
+    }
+    var failureCallback = function(msg){
+        res.send(msg);
+    }
+    var userid = common_fcns.getUserID(req);
+    db_cmds.getPopularTracks(userid, successCallback, failureCallback);
 }
