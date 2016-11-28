@@ -38,7 +38,6 @@ exports.suggestedTrack = function (userid, successCallback, failureCallback) {
             "ON po.trackID = track.trackID " +
             "JOIN artist " +
             "ON track.artist = artist.artistID " +
-            "WHERE gm.user != ? " +
             "WHERE gm.user != ? " +     // TODO: filter own tracks out better
             "ORDER BY RAND() " +
             "LIMIT 1;",
