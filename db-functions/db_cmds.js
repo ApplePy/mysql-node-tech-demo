@@ -223,9 +223,9 @@ exports.getLikes = function(userid, trackid, successCallback, failureCallback) {
     // Get user's track's likes
     db.query({
             sql: "SELECT COUNT(userID) AS likes " +
-            "FROM usertracks ON user.userID = usertracks.userID " +
+            "FROM usertracks " +
             "WHERE usertracks.userID != ? " +
-            "AND trackID == ?",
+            "AND trackID = ?",
             values: [userid, trackid]
         },
         cb);
