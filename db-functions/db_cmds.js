@@ -303,7 +303,7 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
 
     // Get user's tracks
     db.query({
-            sql: "SELECT track.trackid, track.trackName, track.length AS trackLength, artistName, albumName, likes " +
+            sql: "SELECT track.trackID AS trackid, track.trackName, track.length AS trackLength, artistName, albumName, likes " +
             "FROM " +
             "# Get trackIDs and likes (likes include tracks that may not be accessible) " +
             "( " +
