@@ -17,7 +17,7 @@ router.get('/', function(req, res, next) {
 
 router.route('/login')
     .get(function (req, res) {
-        var cb = function (suggestedTrack) {
+        var cb = function () {
             res.render('login', {title: 'Log In'});
         };
 
@@ -36,7 +36,7 @@ router.route('/login')
 
         // Handle bad credentials
         var failureCallback = function() {
-            res.send("error");   // DEBUG
+            res.render('login', {title: 'Log In', errorLogin: 'Wrong username/password. Please try again.'});   // DEBUG
         };
 
         // Check credentials
@@ -81,7 +81,14 @@ router.route('/welcome')
 router.route('/settings')
     .get(function(req, res){
         common_fcns.GetSuggestedTrackAndUserName(res,req,'settings');
+    })
+    .post(function(req, res){
+        common_fcns.changePassword(res, req);
+    })
+    .delete(function(req, res){
+        //delete function
     });
+
 
 
 

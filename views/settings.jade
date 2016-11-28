@@ -1,11 +1,9 @@
 extends layout
 
 block content
-    form(method="post")
-        label Change Password:
-            input(type="password", name= "password", placeholder="New password")
-        input(type="submit", name="ChangePassword", value="Change Password")
-        br
-        br
-        label Delete Account:
-        input(type="submit", name="DeleteAccount", value="Delete Account")
+    label Change Password:
+        input(type="password", name= "password", id="password", placeholder="New password")
+    button(onclick = 'updatePass()') Submit
+    br
+    br
+    button(onclick = 'deleteAccount()') Delete Account!!!!!!!
