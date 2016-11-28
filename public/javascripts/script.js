@@ -12,10 +12,11 @@ function getAllTracksAccessible(){
     $.getJSON('/api/alltracks', function(data){
         var toJade = "";
         $.each(data, function(){
-            var minutes = Math.floor(this.trackLength/60);
-            var seconds = this.trackLength % 60;
+            var minutes = Math.floor(this.trackLength/60000);
+            var seconds = Math.floor((this.trackLength % 60000)/1000);
+            var secondsFormatted = (seconds < 10 ? '0' : '') + seconds;
             toJade += '<div class = "row">';
-            toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + seconds + '  |  ' + this.artistName + '  |  ' + this.albumName;
+            toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + secondsFormatted + '  |  ' + this.artistName + '  |  ' + this.albumName;
             toJade += '  |  <button onclick = "getLikes(' + this.trackid + ')"> Get Current Likes </button>'
             toJade += '<div class = "likes' + this.trackid + '"></div></p>';
             toJade += '</div>';
@@ -29,10 +30,11 @@ function getTracks(){
     $.getJSON('/api/mytracks', function(data){
         var toJade = "";
         $.each(data, function(){
-            var minutes = Math.floor(this.trackLength/60);
-            var seconds = this.trackLength % 60;
+            var minutes = Math.floor(this.trackLength/60000);
+            var seconds = Math.floor((this.trackLength % 60000)/1000);
+            var secondsFormatted = (seconds < 10 ? '0' : '') + seconds;
             toJade += '<div class = "row">';
-            toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + seconds + '  |  ' + this.artistName + '  |  ' + this.albumName;
+            toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + secondsFormatted + '  |  ' + this.artistName + '  |  ' + this.albumName;
             toJade += '  |  <button onclick = "getLikes(' + this.trackid + ')"> Get Current Likes </button>'
             toJade += '<div class = "likes' + this.trackid + '"></div></p>';
             toJade += '</div>';
@@ -46,10 +48,11 @@ function getTop50Tracks(){
     $.getJSON('/api/top50tracks', function(data){
         var toJade = "";
         $.each(data, function(){
-            var minutes = Math.floor(this.trackLength/60);
-            var seconds = this.trackLength % 60;
+            var minutes = Math.floor(this.trackLength/60000);
+            var seconds = Math.floor((this.trackLength % 60000)/1000);
+            var secondsFormatted = (seconds < 10 ? '0' : '') + seconds;
             toJade += '<div class = "row">';
-            toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + seconds + '  |  ' + this.artistName + '  |  ' + this.albumName + '  |  ' + this.likes + '</p>';
+            toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + secondsFormatted + '  |  ' + this.artistName + '  |  ' + this.albumName + '  |  ' + this.likes + '</p>';
             toJade += '</div>';
         });
         $('.trackListing').append(toJade);
