@@ -164,7 +164,7 @@ exports.updateUserPassword = function(userid, password, successCallback, failure
             sql: "UPDATE user(password) " +
             "SET password=? " +
             "WHERE userid = ?",
-            values: [userid, password]
+            values: [password, userid]
         },
         cb);
 };
