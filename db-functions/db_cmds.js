@@ -277,7 +277,7 @@ exports.getPopularTracks = function(userid, successCallback, failureCallback) {
 /** Get all tracks that a user can access.
  *
  * @param userid            The userID to check.
- * @param successCallback   function(result) to be called when command succeeds. 'result' structure: [{trackID, trackName, length, artistName, albumName}, {...}]
+ * @param successCallback   function(result) to be called when command succeeds. 'result' structure: [{trackid, trackName, length, artistName, albumName}, {...}]
  * @param failureCallback   function(error) to be called when command fails. Contains error text.
  */
 exports.getAllTracksAccessible = function(userid, successCallback, failureCallback) {
@@ -296,7 +296,7 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
 
     // Get user's tracks
     db.query({
-            sql: "SELECT track.trackID, trackName, length AS trackLength, artistName, albumName " +
+            sql: "SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName " +
             "FROM track " +
             "JOIN usertracks ON track.trackID = usertracks.trackID " +
             "JOIN albumordering ON track.trackID = albumordering.track " +
