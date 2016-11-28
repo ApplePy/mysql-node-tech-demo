@@ -58,6 +58,7 @@ function getTop50Tracks(){
             toJade += '</div>';
         });
         $('.trackListing').append(toJade);
+
     });
 }
 
@@ -65,6 +66,7 @@ function getLikes(trackid){
     $('.likes' + trackid).empty();
     $.getJSON(('/api/likes/' + trackid), function(data){
         $('.likes' + trackid).append(data);
+
     });
 }
 
@@ -75,18 +77,24 @@ function getPlaylists(){
         var toJade = "";
         $.each(data, function(){
             toJade += '<div class = "row">';
-            toJade += '<p>' + this.playlistid + '  |  ' + this.playlistName + '  |  ' + this.datetimeCreated + '  |  ' + this.createdBy + '</p>';
-            toJade += '  |  <button onclick = "getPlaylistLength(' + this.playlistid + ')"> Get Current Likes </button>'
+            toJade += '<p>' + this.playlistid + '  |  ' + this.playlistName + '  |  ' + this.datetimeCreated + '  |  ' + this.username;
+            toJade += '  |  <button onclick = "getPlaylistLength(' + this.playlistid + ')"> Get Current Length </button>'
             toJade += '<p class = "length' + this.playlistid + '"></p></p>';
             toJade += '</div>';
         });
         $('.playlistwell').append(toJade);
+
     })
 }
 
 function getPlaylistLength(playlistid){
     $('.length' + playlistid).empty();
     $.getJSON(('/api/playlists/' + playlistid), function(data){
-        $('.length' + playlistid).append(data);
+        var minutes = Math.floor(data/60000);
+        var seconds = Math.floor((data % 60000)/1000);
+        var secondsFormatted = (seconds < 10 ? '0' : '') + seconds;
+        var html = minutes + ":" + secondsFormatted;
+        $('.length' + playlistid).append(html);
+
     });
 }

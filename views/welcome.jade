@@ -15,10 +15,12 @@ block content
                                 a(id="mytracks") Only my tracks
                             li
                                 a(id="top50tracks") Top 50 Tracks You Need!
-                div.trackListing
+                div.scrollable(class = 'container-fluid')
+                    div.trackListing
             div.col-sm-4(class = "sidenav")
                 button(id = 'playlists') Get All Playlists
-                div.well(class = 'playlistwell')
+                div.scrollable(class = 'container-fluid')
+                    div.well(class = 'playlistwell')
 
 
     footer.container-fluid(class = "text-center")
