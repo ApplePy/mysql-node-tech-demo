@@ -304,7 +304,8 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
             "JOIN albumordering ON track.trackID = albumordering.track " +
             "JOIN album ON albumordering.album = album.albumID " +
             "JOIN artist ON album.artist=artist.artistID " +
-            "WHERE track.trackID IN (" +
+            "WHERE usertracks.userID = ? " +
+            "OR track.trackID IN (" +
             "SELECT trackID FROM playlistordering AS po " +
             "JOIN sharedplaylists AS sp ON po.playlistID=sp.playlist " +
             "JOIN musicgroupmembership AS mgm ON sp.musicgroup=mgm.musicgroup " +
