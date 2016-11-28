@@ -171,7 +171,7 @@ exports.updateUserPassword = function(userid, password, successCallback, failure
 /** Get all tracks for user.
  *
  * @param userid            The userID to check.
- * @param successCallback   function(result) to be called when command succeeds. 'result' structure: [{trackName, length, artistName, albumName}, {...}]
+ * @param successCallback   function(result) to be called when command succeeds. 'result' structure: [{trackid, trackName, length, artistName, albumName}, {...}]
  * @param failureCallback   function(error) to be called when command fails. Contains error text.
  */
 exports.getAllUserTracks = function(userid, successCallback, failureCallback) {
@@ -233,7 +233,7 @@ exports.getLikes = function(userid, trackid, successCallback, failureCallback) {
 
 /** Get tracks that the user does not own, sorted by popularity.
  * @param userid            The user doing the query.
- * @param successCallback   function(results) to be called when command succeeds. 'result' structure: [{trackName, length, artistName, albumName, likes}, {...}]
+ * @param successCallback   function(results) to be called when command succeeds. 'result' structure: [{trackID, trackName, length, artistName, albumName, likes}, {...}]
  * @param failureCallback   function(error) to be called when command fails. Contains error text.
  */
 exports.getPopularTracks = function(userid, successCallback, failureCallback) {
@@ -249,7 +249,7 @@ exports.getPopularTracks = function(userid, successCallback, failureCallback) {
 
     // NOTE: Inner SELECT finds all tracks that the user has access to, and the outer one gets all the info for those tracks, and counts the "likes"
     db.query({
-            sql: "SELECT trackName, length AS trackLength, artistName, albumName, COUNT(usertracks.userID) AS likes " +
+            sql: "SELECT trackID, trackName, length AS trackLength, artistName, albumName, COUNT(usertracks.userID) AS likes " +
             "FROM track " +
             "JOIN usertracks ON track.trackID = usertracks.trackID " +
             "JOIN albumordering ON track.trackID = albumordering.track " +
@@ -272,3 +272,43 @@ exports.getPopularTracks = function(userid, successCallback, failureCallback) {
         },
         cb);
 };
+
+
+/** Get all tracks that a user can access.
+ *
+ * @param userid            The userID to check.
+ * @param successCallback   function(result) to be called when command succeeds. 'result' structure: [{trackID, trackName, length, artistName, albumName}, {...}]
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.getAllTracksAccessible = function(userid, successCallback, failureCallback) {
+    // Call the appropriate callback
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else if (results.length == 0) {
+            failureCallback("User has no tracks to access.");
+        }
+        else {
+            successCallback(results);
+        }
+    };
+
+    // Get user's tracks
+    db.query({
+            sql: "SELECT track.trackID, trackName, length AS trackLength, artistName, albumName " +
+            "FROM track " +
+            "JOIN usertracks ON track.trackID = usertracks.trackID " +
+            "JOIN albumordering ON track.trackID = albumordering.track " +
+            "JOIN album ON albumordering.album = album.albumID " +
+            "JOIN artist ON album.artist=artist.artistID " +
+            "WHERE track.trackID IN (" +
+            "SELECT trackID FROM playlistordering AS po " +
+            "JOIN sharedplaylists AS sp ON po.playlistID=sp.playlist " +
+            "JOIN musicgroupmembership AS mgm ON sp.musicgroup=mgm.musicgroup " +
+            "WHERE mgm.user = ?)",
+            values: [userid, userid]
+        },
+        cb);
+};
+
