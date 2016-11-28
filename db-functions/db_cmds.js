@@ -328,7 +328,7 @@ exports.getPlaylistLength = function(playlistID, successCallback, failureCallbac
             failureCallback("Playlist has no tracks.");
         }
         else {
-            successCallback(results);
+            successCallback(results[0].playtime);
         }
     };
 
