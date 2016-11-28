@@ -39,6 +39,7 @@ exports.suggestedTrack = function (userid, successCallback, failureCallback) {
             "JOIN artist " +
             "ON track.artist = artist.artistID " +
             "WHERE gm.user != ? " +
+            "WHERE gm.user != ? " +     // TODO: filter own tracks out better
             "ORDER BY RAND() " +
             "LIMIT 1;",
             values: [userid]
@@ -307,7 +308,8 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
             "SELECT trackID FROM playlistordering AS po " +
             "JOIN sharedplaylists AS sp ON po.playlistID=sp.playlist " +
             "JOIN musicgroupmembership AS mgm ON sp.musicgroup=mgm.musicgroup " +
-            "WHERE mgm.user = ?)",
+            "WHERE mgm.user = ?) " +
+            "GROUP BY track.trackID",
             values: [userid, userid]
         },
         cb);
