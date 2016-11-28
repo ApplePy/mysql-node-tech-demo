@@ -3,7 +3,9 @@ var router = express.Router();
 var db_cmds = require('../db-functions/db_cmds');
 var common_fcns = require('../common/common_router_fcns');
 
-/* GET home page. */
+
+// ---- USER ROUTES ---- //
+
 router.get('/', function(req, res, next) {
     var cb = function() {
         res.render('index', {title: 'Apollo'});
@@ -80,6 +82,9 @@ router.route('/settings')
     .get(function(req, res){
         common_fcns.GetSuggestedTrackAndUserName(res,req,'settings');
     });
+
+
+
 
 // ---- API ---- //
 
