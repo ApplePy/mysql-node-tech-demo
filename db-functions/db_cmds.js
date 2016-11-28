@@ -303,11 +303,9 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
 
     // Get user's tracks
     db.query({
-            sql: "SELECT track.trackid, track.trackName, track.length AS trackLength, artistName, albumName, likes " +
-            "FROM " +
-            "# Get trackIDs and likes (likes include tracks that may not be accessible) " +
-            "( " +
-            "    # Get trackIDs that are accessible, but don't belong to the user " +
+            sql: "SELECT track.trackID AS trackid, track.trackName, track.length AS trackLength, artistName, albumName, likes " +
+            "FROM " +   // Get trackIDs and likes (likes include tracks that may not be accessible)
+            "( " +      // Get trackIDs that are accessible, but don't belong to the user
             "SELECT trackID " +
             "FROM usertracks " +
             "WHERE usertracks.userID != ? " +
@@ -320,8 +318,7 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
             "WHERE mgm.user = ? " +
             ") " +
             ") AS accessibleTracks " +
-            "NATURAL JOIN ( " +
-            "# Get number of users (outside of yourself) that has each track " +
+            "NATURAL JOIN ( " +     // Get number of users (outside of yourself) that has each track
             "SELECT trackID, COUNT(userID) AS likes " +
             "FROM usertracks " +
             "WHERE usertracks.userID != ? " +
@@ -339,67 +336,133 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
         cb);
 };
 
-/** Get play time length of playlist.
+
+// TODO: WARNING: TOTALLY UNTESTED.
+/** Create a new random playlist.
  *
- * @param playlistID        The playlist to count.
- * @param successCallback   function(playtime) to be called when command succeeds. In milliseconds.
- * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ * @param userid                The userid for who will own the new playlist.
+ * @param playlistname          The name for the new playlist.
+ * @param trackColumnFilter     The track column to filter new tracks by. String only.
+ * @param filterValue           The value(s) to filter new tracks by. Array of values.
+ * @param playlistLength        The length of the playlist to generate
+ * @param successCallback       function(result) to be called when command succeeds. 'result' structure: [{trackID, trackName, length, artistName, albumName}, {...}]
+ * @param failureCallback       function(error) to be called when command fails. Contains error text.
  */
-exports.getPlaylistLength = function(playlistID, successCallback, failureCallback) {
+exports.createNewRandomPlaylist = function(userid,
+                                           playlistname,
+                                           trackColumnFilter,
+                                           filterValue,
+                                           playlistLength,
+                                           successCallback,
+                                           failureCallback) {
     // Call the appropriate callback
     var cb = function(error, results){
         if (error) {
             failureCallback(error);
-        }
-        else if (results.length == 0) {
-            failureCallback("Playlist has no tracks.");
-        }
-        else {
-            successCallback(results[0].playtime);
-        }
-    };
-
-    // Get user's tracks
-    db.query({
-            sql: "SELECT SUM(length) AS playtime " +
-            "FROM playlistordering AS po " +
-            "JOIN track ON track.trackID=po.trackID " +
-            "WHERE po.playlistID = ?",
-            values: [playlistID]
-        },
-        cb);
-};
-
-/** Gets all playlists accessible to a user.
- *
- * @param userid            The user to request accessible playlist for
- * @param successCallback   function(results) to be called when command succeeds. 'results' format: [{playlistid, playlistName, datetimeCreated, username}, ...]
- * @param failureCallback   function(error) to be called when command fails. Contains error text.
- */
-exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCallback){
-    var cb = function(error, results){
-        if (error) {
-            failureCallback(error);
-        }
-        else if (results.length == 0) {
-            failureCallback("User has no playlists to access.");
         }
         else {
             successCallback(results);
         }
     };
 
-    //Get playlists
-    db.query({
-            sql: "SELECT playlist.playlistID AS playlistid, playlistName, datetimeCreated, user.username AS username " +
-            "FROM playlist " +
-            "LEFT JOIN sharedplaylists ON playlist.playlistID = sharedplaylists.playlist " +
-            "LEFT JOIN musicgroupmembership ON sharedplaylists.musicgroup = musicgroupmembership.musicgroup " +
-            "LEFT JOIN user ON playlist.createdBy = user.userID " +
-            "WHERE musicgroupmembership.user = ? " +
-            "OR playlist.createdBy = ? " +
-            "GROUP BY playlistID;",
-            values: [userid, userid]
-        },
-        cb);
+    db.get.beginTransaction(function(err) {
+        // Can't start transaction, stop
+        if (err) { failureCallback(err.message); return;}
+
+        // Create new playlist for the user
+        db.get.query({
+                sql:'INSERT INTO playlist(playlistName, datetimeCreated, createdBy) ' +
+                'VALUES(?, NOW(), ?)',
+                values:[playlistname, userid]
+            }, function(err, result) {
+
+            // Create playlist failed, rollback and quit.
+            if (err) {
+                return db.get.rollback(function() {
+                    failureCallback(err.message);
+                });
+            }
+
+            db.query({
+                sql:"SELECT playlistID, playlistName, datetimeCreated, username " +
+                "FROM playlist " +
+                "JOIN user ON createdBy=user.userID " +
+                "WHERE playlistName = ? AND createdBy = ? " +
+                "ORDER BY datetimeCreated DESC " +
+                "LIMIT 1",
+                values: [playlistname, userid]
+            }, function(err, specialresult) {
+
+                // Get playlist failed, rollback and quit.
+                if (err || specialresult.length == 0) {
+                    return db.get.rollback(function() {
+                        failureCallback(err.message);
+                    });
+                }
+
+                db.query({
+                    sql:"SET @position := 0",
+                    values: []
+                }, function(err, result) {
+
+                    // Reset position variable failed, rollback and exit
+                    if (err) {
+                        return db.get.rollback(function() {
+                            failureCallback(err.message);
+                        });
+                    }
+
+                    db.query({
+                        sql:"INSERT INTO " +
+                        "playlistordering(playlistID, trackID, position) " +
+                        "SELECT ?, trackID, (@position := ifnull(@position, 0) + 1)" +
+                        "FROM (SELECT trackID " +
+                        "FROM track " +
+                        "WHERE ? LIKE ? " +
+                        "LIMIT ?) AS tid",
+                        values:[specialresult[0].playlistID, trackColumnFilter, filterValue, playlistLength]
+                    }, function(err, result) {
+
+                        // Random insert failed, rollback
+                        if (err) {
+                            return db.get.rollback(function() {
+                                failureCallback(err.message);
+                            });
+                        }
+
+                        db.query({
+                            sql:"SELECT track.trackID, trackname, length, artistName, albumName " +
+                            "FROM track " +
+                            "JOIN artist ON track.artist = artist.artistID " +
+                            "JOIN albumordering ON track.trackID = albumordering.track " +
+                            "JOIN album ON albumordering.album = album.albumID " +
+                            "JOIN playlistordering ON track.trackID = playlistordering.trackID " +
+                            "WHERE playlistID = ? " +
+                            "GROUP BY playlistordering.position " +
+                            "ORDER BY playlistordering.position",
+                            values:[specialresult[0].playlistID,]
+                        },function(err, finalresult) {
+
+                            // Get tracks failed, rollback and quit.
+                            if (err || finalresult.length == 0) {
+                                return db.get.rollback(function() {
+                                    failureCallback(err.message);
+                                });
+                            }
+
+                            // GREAT! Commit and return
+                            db.get.commit(function(err) {
+                                if (err) {
+                                    return db.get.rollback(function() {
+                                        failureCallback("commit failed.");
+                                    });
+                                }
+                                successCallback(finalresult);
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
 };
