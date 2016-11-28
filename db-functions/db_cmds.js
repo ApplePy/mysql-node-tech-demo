@@ -60,6 +60,9 @@ exports.loginUser = function(username, password, successCallback, failureCallbac
         if (error) {
             failureCallback();
         }
+        else if (results.length == 0) {
+            failureCallback();
+        }
         else {
             var userid = results[0].userID;
             successCallback(userid);
@@ -149,6 +152,8 @@ exports.getUserFullNameAndUsername = function(userid, successCallback, failureCa
  */
 exports.updateUserPassword = function(userid, password, successCallback, failureCallback) {
     // Call successCallback on update success, call failureCallback with a message otherwise
+    console.log(userid);
+    console.log(password);
     var cb = function(error, results){
         if (error) {
             failureCallback(error);
