@@ -81,19 +81,33 @@ router.route('/settings')
         common_fcns.GetSuggestedTrackAndUserName(res,req,'settings');
     });
 
-router.route('/api/mytracks')
-    .get(function(req, res){
+// ---- API ---- //
+
+var api = express.Router({mergeparams: true});
+// Set up no-caching middleware
+api.use(function (req, res, next) {
+    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.header('Expires', '-1');
+    res.header('Pragma', 'no-cache');
+    next();
+});
+
+api.route('/mytracks')
+    .get(function (req, res) {
         common_fcns.getUserTracks(res, req);
     });
 
-router.route('/api/top50tracks')
-    .get(function(req, res){
+api.route('/top50tracks')
+    .get(function (req, res) {
         common_fcns.getTop50Tracks(res, req);
     });
 
-router.route('/api/likes/:track_id')
-    .get(function(req, res){
+api.route('/likes/:track_id')
+    .get(function (req, res) {
         common_fcns.getTrackLikes(res, req, req.params.track_id);
     });
+
+// Wire up router
+router.use('/api', api);
 
 module.exports = router;
