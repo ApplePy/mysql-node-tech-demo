@@ -196,7 +196,8 @@ exports.getAllUserTracks = function(userid, successCallback, failureCallback) {
             "JOIN albumordering ON track.trackID = albumordering.track " +
             "JOIN album ON albumordering.album = album.albumID " +
             "JOIN artist ON album.artist=artist.artistID " +
-            "WHERE usertracks.userID = ?",
+            "WHERE usertracks.userID = ? " +
+            "GROUP BY track.trackID",
             values: [userid]
         },
         cb);
