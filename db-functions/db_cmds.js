@@ -312,6 +312,37 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
         cb);
 };
 
+/** Get play time length of playlist.
+ *
+ * @param playlistID        The playlist to count.
+ * @param successCallback   function(playtime) to be called when command succeeds. In milliseconds.
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.getPlaylistLength = function(playlistID, successCallback, failureCallback) {
+    // Call the appropriate callback
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else if (results.length == 0) {
+            failureCallback("Playlist has no tracks.");
+        }
+        else {
+            successCallback(results[0].playtime);
+        }
+    };
+
+    // Get user's tracks
+    db.query({
+            sql: "SELECT SUM(length) AS playtime " +
+            "FROM playlistordering AS po " +
+            "JOIN track ON track.trackID=po.trackID " +
+            "WHERE po.playlistID = ?",
+            values: [playlistID]
+        },
+        cb);
+};
+
 exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCallback){
     var cb = function(error, results){
         if (error) {
@@ -337,4 +368,4 @@ exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCal
         cb);
 
 
-}
+};
