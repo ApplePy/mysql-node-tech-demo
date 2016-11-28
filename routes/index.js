@@ -91,9 +91,9 @@ router.route('/api/top50tracks')
         common_fcns.getTop50Tracks(res, req);
     });
 
-router.route('api/likes/:track_id')
+router.route('/api/likes/:track_id')
     .get(function(req, res){
-        common_fcns.getTrackLikes(res, req, id);
+        common_fcns.getTrackLikes(res, req, req.params.track_id);
     });
 
 module.exports = router;

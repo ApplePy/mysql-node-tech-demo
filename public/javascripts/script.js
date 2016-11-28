@@ -11,15 +11,12 @@ function getTracks(){
     $.getJSON('/api/mytracks', function(data){
         var toJade = "";
         $.each(data, function(){
-            var trackLikes = "";
-            $.getJSON(('/api/likes/' + this.trackid), function(track){
-                trackLikes = '  |  Likes: ' + track.likes + '</p>';
-            });
             var minutes = Math.floor(this.trackLength/60);
             var seconds = this.trackLength % 60;
             toJade += '<div class = "row">';
             toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + seconds + '  |  ' + this.artistName + '  |  ' + this.albumName;
-            toJade += trackLikes;
+            toJade += '  |  <button onclick = "getLikes(' + this.trackid + ')"> Get Current Likes </button>'
+            toJade += '<div class = "likes"' + this.trackid + '></div></p>';
             toJade += '</div>';
         });
         $('.trackListing').append(toJade);
@@ -38,6 +35,15 @@ function getTop50Tracks(){
             toJade += '</div>';
         });
         $('.trackListing').append(toJade);
+    });
+}
+
+function getLikes(trackid){
+    var trackLikes = "";
+    $.getJSON(('/api/likes/' + trackid), function(track){
+        console.log(track);
+        trackLikes = track;
+        $('.likes' + trackid).innerHTML = trackLikes;
     });
 }
 
