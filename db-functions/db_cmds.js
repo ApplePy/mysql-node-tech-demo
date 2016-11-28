@@ -375,6 +375,4 @@ exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCal
             values: [userid, userid]
         },
         cb);
-
-
 };
