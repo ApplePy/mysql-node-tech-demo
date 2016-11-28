@@ -5,6 +5,7 @@ $(document).ready(function(){
     $("#mytracks").on("click", getTracks);
     $("#top50tracks").on("click", getTop50Tracks);
     $("#alltracks").on("click", getAllTracksAccessible);
+    $("#playlists").on("click", getPlaylists);
 });
 
 function getAllTracksAccessible(){
@@ -36,7 +37,7 @@ function getTracks(){
             toJade += '<div class = "row">';
             toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + secondsFormatted + '  |  ' + this.artistName + '  |  ' + this.albumName;
             toJade += '  |  <button onclick = "getLikes(' + this.trackid + ')"> Get Current Likes </button>'
-            toJade += '<div class = "likes' + this.trackid + '"></div></p>';
+            toJade += '<p class = "likes' + this.trackid + '"></p></p>';
             toJade += '</div>';
         });
         $('.trackListing').append(toJade);
@@ -46,6 +47,7 @@ function getTracks(){
 function getTop50Tracks(){
     $('.trackListing').empty();
     $.getJSON('/api/top50tracks', function(data){
+        console.log(data);
         var toJade = "";
         $.each(data, function(){
             var minutes = Math.floor(this.trackLength/60000);
@@ -60,8 +62,23 @@ function getTop50Tracks(){
 }
 
 function getLikes(trackid){
+    $('.likes' + trackid).empty();
     $.getJSON(('/api/likes/' + trackid), function(data){
         $('.likes' + trackid).append(data);
     });
+}
+
+function getPlaylists(){
+    $('.playlistwell').empty();
+    $.getJSON(('/api/playlists'), function(data){
+        console.log(data);
+        var toJade = "";
+        $.each(data, function(){
+            toJade += '<div class = "row">';
+            toJade += '<p>' + this.playlistid + '  |  ' + this.playlistName + '  |  ' + this.datetimeCreated + '  |  ' + this.createdBy + '</p>';
+            toJade += '</div>';
+        });
+        $('.playlistwell').append(toJade);
+    })
 }
 

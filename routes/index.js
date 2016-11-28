@@ -115,7 +115,12 @@ api.route('/likes/:track_id')
 api.route('/alltracks')
     .get(function(req, res){
         common_fcns.getAllTracks(res, req);
-    })
+    });
+
+api.route('/playlists')
+    .get(function(req, res){
+        common_fcns.getPlaylists(res, req);
+    });
 
 // Wire up router
 router.use('/api', api);

@@ -312,3 +312,29 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
         cb);
 };
 
+exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCallback){
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else if (results.length == 0) {
+            failureCallback("User has no playlists to access.");
+        }
+        else {
+            successCallback(results);
+        }
+    };
+    //Get playlists
+    db.query({
+            sql: "SELECT playlist.playlistID AS playlistid, playlistName, datetimeCreated, createdBy " +
+            "FROM playlist " +
+            "JOIN sharedplaylists ON playlist.playlistID = sharedplaylists.playlistID " +
+            "JOIN musicgroupmembership ON sharedplaylists.musicgroup = musicgroupmembership.musicgroup " +
+            "WHERE musicgroupmembership.user == ? " +
+            "AND playlist.createdBy == ? ",
+            values: [userid, userid]
+        },
+        cb);
+
+
+}

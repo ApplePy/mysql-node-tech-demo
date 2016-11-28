@@ -117,3 +117,14 @@ exports.getAllTracks = function(res, req){
     var userid = common_fcns.getUserID(req);
     db_cmds.getAllTracksAccessible(userid, successCallback, failureCallback);
 }
+
+exports.getPlaylists = function(res, req){
+    var successCallback = function(results){
+        res.send(JSON.stringify(results));
+    }
+    var failureCallback = function(msg){
+        res.send(msg);
+    }
+    var userid = common_fcns.getUserID(req);
+    db_cmds.getAllPlaylistsAccessible(userid, successCallback, failureCallback);
+}
