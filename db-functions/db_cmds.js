@@ -310,7 +310,8 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
             "JOIN sharedplaylists AS sp ON po.playlistID=sp.playlist " +
             "JOIN musicgroupmembership AS mgm ON sp.musicgroup=mgm.musicgroup " +
             "WHERE mgm.user = ?) " +
-            "GROUP BY track.trackID",
+            "GROUP BY track.trackID " +
+            "ORDER BY artist.artistName, album.albumName, track.trackName",
             values: [userid, userid]
         },
         cb);
