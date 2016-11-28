@@ -162,7 +162,8 @@ exports.updateUserPassword = function(userid, password, successCallback, failure
     // TODO: Password hashing?
     db.query({
             sql: "UPDATE user(password) " +
-            "VALUES(?) WHERE userid = ?",
+            "SET password=? " +
+            "WHERE userid = ?",
             values: [userid, password]
         },
         cb);
