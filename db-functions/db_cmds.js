@@ -303,11 +303,9 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
 
     // Get user's tracks
     db.query({
-            sql: "SELECT track.trackid, track.trackName, track.length AS trackLength, artistName, albumName, likes " +
-            "FROM " +
-            "# Get trackIDs and likes (likes include tracks that may not be accessible) " +
-            "( " +
-            "    # Get trackIDs that are accessible, but don't belong to the user " +
+            sql: "SELECT track.trackID AS trackid, track.trackName, track.length AS trackLength, artistName, albumName, likes " +
+            "FROM " +   // Get trackIDs and likes (likes include tracks that may not be accessible)
+            "( " +      // Get trackIDs that are accessible, but don't belong to the user
             "SELECT trackID " +
             "FROM usertracks " +
             "WHERE usertracks.userID != ? " +
@@ -320,8 +318,7 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
             "WHERE mgm.user = ? " +
             ") " +
             ") AS accessibleTracks " +
-            "NATURAL JOIN ( " +
-            "# Get number of users (outside of yourself) that has each track " +
+            "NATURAL JOIN ( " +     // Get number of users (outside of yourself) that has each track
             "SELECT trackID, COUNT(userID) AS likes " +
             "FROM usertracks " +
             "WHERE usertracks.userID != ? " +
