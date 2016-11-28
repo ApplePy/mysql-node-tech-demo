@@ -98,6 +98,7 @@ exports.getTop50Tracks = function(res, req){
 
 exports.getTrackLikes = function(res, req, trackid){
     var successCallback = function(results){
+        console.log(results);
         res.send(JSON.stringify(results));
     }
     var failureCallback = function(msg){
