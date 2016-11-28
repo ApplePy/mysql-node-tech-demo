@@ -357,12 +357,13 @@ exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCal
     };
     //Get playlists
     db.query({
-            sql: "SELECT playlist.playlistID AS playlistid, playlistName, datetimeCreated, createdBy " +
+            sql: "SELECT DISTINCT playlist.playlistID AS playlistid, playlistName, datetimeCreated, user.username AS username " +
             "FROM playlist " +
-            "JOIN sharedplaylists ON playlist.playlistID = sharedplaylists.playlistID " +
+            "JOIN sharedplaylists ON playlist.playlistID = sharedplaylists.playlist " +
             "JOIN musicgroupmembership ON sharedplaylists.musicgroup = musicgroupmembership.musicgroup " +
-            "WHERE musicgroupmembership.user == ? " +
-            "AND playlist.createdBy == ? ",
+            "JOIN user ON musicgroupmembership.user = user.userID " +
+            "WHERE musicgroupmembership.user = ? " +
+            "OR playlist.createdBy = ?",
             values: [userid, userid]
         },
         cb);

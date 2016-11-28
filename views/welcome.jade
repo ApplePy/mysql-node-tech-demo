@@ -3,7 +3,7 @@ extends layout
 block content
     div.container-fluid
         div.row(class = "content")
-            div.col-sm-10
+            div.col-sm-8
                 div.row(class = "librarySubheader")
                     div.dropdown
                         button.btn(class = "btn-default dropdown-toggle" type="button" id="chooseTrackDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true") List tracks...
@@ -16,7 +16,7 @@ block content
                             li
                                 a(id="top50tracks") Top 50 Tracks You Need!
                 div.trackListing
-            div.col-sm-2(class = "sidenav")
+            div.col-sm-4(class = "sidenav")
                 button(id = 'playlists') Get All Playlists
                 div.well(class = 'playlistwell')
 

@@ -122,6 +122,11 @@ api.route('/playlists')
         common_fcns.getPlaylists(res, req);
     });
 
+api.route('/playlists/:playlist_id')
+    .get(function(req,res){
+        common_fcns.getPlaylistLength(res, req, req.params.playlist_id);
+    });
+
 // Wire up router
 router.use('/api', api);
 

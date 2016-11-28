@@ -128,3 +128,14 @@ exports.getPlaylists = function(res, req){
     var userid = common_fcns.getUserID(req);
     db_cmds.getAllPlaylistsAccessible(userid, successCallback, failureCallback);
 }
+
+exports.getPlaylistLength = function(res, req, playlistid){
+    var successCallback = function(results){
+        res.send(JSON.stringify(results));
+    }
+    var failureCallback = function(msg){
+        res.send(msg);
+    }
+    var userid = common_fcns.getUserID(req);
+    db_cmds.getPlaylistLength(playlistid, successCallback, failureCallback);
+}
