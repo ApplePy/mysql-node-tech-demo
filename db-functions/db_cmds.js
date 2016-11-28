@@ -343,6 +343,12 @@ exports.getPlaylistLength = function(playlistID, successCallback, failureCallbac
         cb);
 };
 
+/** Gets all playlists accessible to a user.
+ *
+ * @param userid            The user to request accessible playlist for
+ * @param successCallback   function(results) to be called when command succeeds. 'results' format: [{playlistid, playlistName, datetimeCreated, username}, ...]
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
 exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCallback){
     var cb = function(error, results){
         if (error) {
@@ -355,15 +361,17 @@ exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCal
             successCallback(results);
         }
     };
+
     //Get playlists
     db.query({
-            sql: "SELECT DISTINCT playlist.playlistID AS playlistid, playlistName, datetimeCreated, user.username AS username " +
+            sql: "SELECT playlist.playlistID AS playlistid, playlistName, datetimeCreated, user.username AS username " +
             "FROM playlist " +
-            "JOIN sharedplaylists ON playlist.playlistID = sharedplaylists.playlist " +
-            "JOIN musicgroupmembership ON sharedplaylists.musicgroup = musicgroupmembership.musicgroup " +
-            "JOIN user ON musicgroupmembership.user = user.userID " +
+            "LEFT JOIN sharedplaylists ON playlist.playlistID = sharedplaylists.playlist " +
+            "LEFT JOIN musicgroupmembership ON sharedplaylists.musicgroup = musicgroupmembership.musicgroup " +
+            "LEFT JOIN user ON playlist.createdBy = user.userID " +
             "WHERE musicgroupmembership.user = ? " +
-            "OR playlist.createdBy = ?",
+            "OR playlist.createdBy = ? " +
+            "GROUP BY playlistID;",
             values: [userid, userid]
         },
         cb);
