@@ -11,10 +11,15 @@ function getTracks(){
     $.getJSON('/api/mytracks', function(data){
         var toJade = "";
         $.each(data, function(){
+            var trackLikes = "";
+            $.getJSON(('/api/likes/' + this.trackid), function(track){
+                trackLikes = '  |  Likes: ' + track.likes + '</p>';
+            });
             var minutes = Math.floor(this.trackLength/60);
             var seconds = this.trackLength % 60;
             toJade += '<div class = "row">';
-            toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + seconds + '  |  ' + this.artistName + '  |  ' + this.albumName + '</p>';
+            toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + seconds + '  |  ' + this.artistName + '  |  ' + this.albumName;
+            toJade += trackLikes;
             toJade += '</div>';
         });
         $('.trackListing').append(toJade);

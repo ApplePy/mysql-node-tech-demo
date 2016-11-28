@@ -95,3 +95,14 @@ exports.getTop50Tracks = function(res, req){
     var userid = common_fcns.getUserID(req);
     db_cmds.getPopularTracks(userid, successCallback, failureCallback);
 }
+
+exports.getTrackLikes = function(res, req, trackid){
+    var successCallback = function(results){
+        res.send(JSON.stringify(results));
+    }
+    var failureCallback = function(msg){
+        res.send(msg);
+    }
+    var userid = common_fcns.getUserID(req);
+    db_cmds.getLikes(userid, trackid, successCallback, failureCallback);
+}
