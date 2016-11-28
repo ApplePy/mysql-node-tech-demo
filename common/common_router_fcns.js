@@ -106,3 +106,14 @@ exports.getTrackLikes = function(res, req, trackid){
     var userid = common_fcns.getUserID(req);
     db_cmds.getLikes(userid, trackid, successCallback, failureCallback);
 }
+
+exports.getAllTracks = function(res, req){
+    var successCallback = function(results){
+        res.send(JSON.stringify(results));
+    }
+    var failureCallback = function(msg){
+        res.send(msg);
+    }
+    var userid = common_fcns.getUserID(req);
+    db_cmds.getAllTracksAccessible(userid, successCallback, failureCallback);
+}

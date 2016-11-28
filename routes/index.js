@@ -107,6 +107,11 @@ api.route('/likes/:track_id')
         common_fcns.getTrackLikes(res, req, req.params.track_id);
     });
 
+api.route('/alltracks')
+    .get(function(req, res){
+        common_fcns.getAllTracks(res, req);
+    })
+
 // Wire up router
 router.use('/api', api);
 

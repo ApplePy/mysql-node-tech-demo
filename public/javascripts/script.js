@@ -4,7 +4,25 @@
 $(document).ready(function(){
     $("#mytracks").on("click", getTracks);
     $("#top50tracks").on("click", getTop50Tracks);
-})
+    $("#alltracks").on("click", getAllTracksAccessible);
+});
+
+function getAllTracksAccessible(){
+    $('.trackListing').empty();
+    $.getJSON('/api/alltracks', function(data){
+        var toJade = "";
+        $.each(data, function(){
+            var minutes = Math.floor(this.trackLength/60);
+            var seconds = this.trackLength % 60;
+            toJade += '<div class = "row">';
+            toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + seconds + '  |  ' + this.artistName + '  |  ' + this.albumName;
+            toJade += '  |  <button onclick = "getLikes(' + this.trackid + ')"> Get Current Likes </button>'
+            toJade += '<div class = "likes' + this.trackid + '"></div></p>';
+            toJade += '</div>';
+        });
+        $('.trackListing').append(toJade);
+    })
+}
 
 function getTracks(){
     $('.trackListing').empty();
@@ -16,7 +34,7 @@ function getTracks(){
             toJade += '<div class = "row">';
             toJade += '<p>' + this.trackName + '  |  ' + minutes + ':' + seconds + '  |  ' + this.artistName + '  |  ' + this.albumName;
             toJade += '  |  <button onclick = "getLikes(' + this.trackid + ')"> Get Current Likes </button>'
-            toJade += '<div class = "likes"' + this.trackid + '></div></p>';
+            toJade += '<div class = "likes' + this.trackid + '"></div></p>';
             toJade += '</div>';
         });
         $('.trackListing').append(toJade);
@@ -39,11 +57,8 @@ function getTop50Tracks(){
 }
 
 function getLikes(trackid){
-    var trackLikes = "";
-    $.getJSON(('/api/likes/' + trackid), function(track){
-        console.log(track);
-        trackLikes = track;
-        $('.likes' + trackid).innerHTML = trackLikes;
+    $.getJSON(('/api/likes/' + trackid), function(data){
+        $('.likes' + trackid).append(data);
     });
 }
 
