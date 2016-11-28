@@ -233,7 +233,7 @@ exports.getLikes = function(userid, trackid, successCallback, failureCallback) {
 
 /** Get tracks that the user does not own, sorted by popularity.
  * @param userid            The user doing the query.
- * @param successCallback   function(results) to be called when command succeeds. 'result' structure: [{trackID, trackName, length, artistName, albumName, likes}, {...}]
+ * @param successCallback   function(results) to be called when command succeeds. 'result' structure: [{trackid, trackName, length, artistName, albumName, likes}, {...}]
  * @param failureCallback   function(error) to be called when command fails. Contains error text.
  */
 exports.getPopularTracks = function(userid, successCallback, failureCallback) {
@@ -249,7 +249,7 @@ exports.getPopularTracks = function(userid, successCallback, failureCallback) {
 
     // NOTE: Inner SELECT finds all tracks that the user has access to, and the outer one gets all the info for those tracks, and counts the "likes"
     db.query({
-            sql: "SELECT trackID, trackName, length AS trackLength, artistName, albumName, COUNT(usertracks.userID) AS likes " +
+            sql: "SELECT track.trackid, trackName, length AS trackLength, artistName, albumName, COUNT(usertracks.userID) AS likes " +
             "FROM track " +
             "JOIN usertracks ON track.trackID = usertracks.trackID " +
             "JOIN albumordering ON track.trackID = albumordering.track " +
