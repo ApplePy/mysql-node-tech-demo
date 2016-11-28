@@ -155,11 +155,13 @@ exports.updateUserPassword = function(userid, password, successCallback, failure
     console.log(userid);
     console.log(password);
     var cb = function(error, results){
+        console.log(error);
+        console.log(results);
         if (error) {
             failureCallback(error);
         }
         else {
-            successCallback();
+            successCallback(results);
         }
     };
 
@@ -168,7 +170,7 @@ exports.updateUserPassword = function(userid, password, successCallback, failure
     db.query({
             sql: "UPDATE user " +
             "SET password=? " +
-            "WHERE userid = ?",
+            "WHERE userID = ?",
             values: [password, userid]
         },
         cb);

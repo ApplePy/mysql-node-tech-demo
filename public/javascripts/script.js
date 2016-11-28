@@ -6,7 +6,7 @@ $(document).ready(function(){
     $("#top50tracks").on("click", getTop50Tracks);
     $("#alltracks").on("click", getAllTracksAccessible);
     $("#playlists").on("click", getPlaylists);
-    $("randomplaylist").on("click", generateRandPlaylist);
+    $("#randomplaylist").on("click", generateRandPlaylist);
 });
 
 function generateRandPlaylist() {
@@ -112,5 +112,22 @@ function getPlaylistLength(playlistid){
         var html = minutes + ":" + secondsFormatted;
         $('.length' + playlistid).append(html);
 
+    });
+}
+
+function updatePass(){
+    var pass = $("#password").val();
+
+    $.ajax({
+        type: 'POST',
+        data: { 'password': pass },
+        url: '/settings',
+        dataType:'JSON'
+    }).done(function(res){
+        if (res.message != 'Success'){
+            alert('Error: ' + JSON.stringify(res));
+        } else {
+            alert('Your password was updated successfully.');
+        }
     });
 }

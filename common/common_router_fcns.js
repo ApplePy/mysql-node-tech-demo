@@ -137,6 +137,17 @@ exports.getPlaylistLength = function(res, req, playlistid){
     var failureCallback = function(msg){
         res.send(msg);
     }
-    var userid = common_fcns.getUserID(req);
     db_cmds.getPlaylistLength(playlistid, successCallback, failureCallback);
+}
+
+exports.changePassword = function(res, req){
+    var successCallback = function(){
+        res.json({message: 'Success'});
+    }
+    var failureCallback = function(msg){
+        res.send(msg);
+    }
+    var userid = common_fcns.getUserID(req);
+    var password = req.body.password;
+    db_cmds.updateUserPassword(userid, password, successCallback, failureCallback);
 }
