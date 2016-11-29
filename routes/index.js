@@ -45,7 +45,7 @@ router.route('/login')
 
 router.route('/create-user')
     .get(function (req, res) {
-        var cb = function (suggestedTrack) {
+        var cb = function () {
             res.render('create-user', {title: 'Create User'});
         };
 
@@ -135,9 +135,9 @@ api.route('/playlists/:playlist_id')
     });
 
 api.route('/randomplaylist')
-    .get(function(req, res){
+    .post(function(req, res){
         common_fcns.GenerateRandomPlaylist(res, req);
-    })
+    });
 
 // Wire up router
 router.use('/api', api);

@@ -350,9 +350,9 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
  */
 exports.createNewRandomPlaylist = function(userid,
                                            playlistname,
-                                           //trackColumnFilter,
-                                           //filterValue,
-                                           //playlistLength,
+                                           trackColumnFilter,
+                                           filterValue,
+                                           playlistLength,
                                            successCallback,
                                            failureCallback) {
     // Call the appropriate callback
@@ -365,12 +365,12 @@ exports.createNewRandomPlaylist = function(userid,
         }
     };
 
-    db.get.beginTransaction(function(err) {
+    db.get().beginTransaction(function(err) {
         // Can't start transaction, stop
-        if (err) { failureCallback(err.message); return;}
+        if (err) { failureCallback(err); return;}
 
         // Create new playlist for the user
-        db.get.query({
+        db.get().query({
                 sql:'INSERT INTO playlist(playlistName, datetimeCreated, createdBy) ' +
                 'VALUES(?, NOW(), ?)',
                 values:[playlistname, userid]
@@ -378,8 +378,8 @@ exports.createNewRandomPlaylist = function(userid,
 
             // Create playlist failed, rollback and quit.
             if (err) {
-                return db.get.rollback(function() {
-                    failureCallback(err.message);
+                return db.get().rollback(function() {
+                    throw err;
                 });
             }
 
@@ -395,8 +395,8 @@ exports.createNewRandomPlaylist = function(userid,
 
                 // Get playlist failed, rollback and quit.
                 if (err || specialresult.length == 0) {
-                    return db.get.rollback(function() {
-                        failureCallback(err.message);
+                    return db.get().rollback(function() {
+                        throw err;
                     });
                 }
 
@@ -407,8 +407,8 @@ exports.createNewRandomPlaylist = function(userid,
 
                     // Reset position variable failed, rollback and exit
                     if (err) {
-                        return db.get.rollback(function() {
-                            failureCallback(err.message);
+                        return db.get().rollback(function() {
+                            throw err;
                         });
                     }
 
@@ -419,19 +419,19 @@ exports.createNewRandomPlaylist = function(userid,
                         "FROM (SELECT trackID " +
                         "FROM track " +
                         "WHERE ? LIKE ? " +
-                        "LIMIT ?) AS tid",
-                        values:[specialresult[0].playlistID, trackColumnFilter, filterValue, playlistLength]
+                        "LIMIT 20) AS tid",
+                        values:[specialresult[0].playlistID, trackColumnFilter, filterValue/*, playlistLength*/]
                     }, function(err, result) {
 
                         // Random insert failed, rollback
                         if (err) {
-                            return db.get.rollback(function() {
-                                failureCallback(err.message);
+                            return db.get().rollback(function() {
+                                throw err;
                             });
                         }
 
                         db.query({
-                            sql:"SELECT track.trackID, trackname, length, artistName, albumName " +
+                            sql:"SELECT track.trackID AS trackid, trackName, length, artistName, albumName " +
                             "FROM track " +
                             "JOIN artist ON track.artist = artist.artistID " +
                             "JOIN albumordering ON track.trackID = albumordering.track " +
@@ -445,26 +445,25 @@ exports.createNewRandomPlaylist = function(userid,
 
                             // Get tracks failed, rollback and quit.
                             if (err || finalresult.length == 0) {
-                                return db.get.rollback(function() {
-                                    failureCallback(err.message);
+                                return db.get().rollback(function() {
+                                    throw err;
                                 });
                             }
 
                             // GREAT! Commit and return
-                            db.get.commit(function(err) {
+                            db.get().commit(function(err) {
                                 if (err) {
-                                    return db.get.rollback(function() {
-                                        failureCallback("commit failed.");
+                                    return db.get().rollback(function() {
+                                        throw err;
                                     });
                                 }
-                                successCallback(finalresult);
                             });
                         });
                     });
                 });
             });
         });
-    });
+    }, cb);
 };
 
 /** Get play time length of playlist.

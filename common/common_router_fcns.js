@@ -153,13 +153,19 @@ exports.changePassword = function(res, req){
 }
 
 exports.GenerateRandomPlaylist = function(res, req){
+    console.log('reached common fcns');
     var successCallback = function(results){
         console.log('Results at common: ' + results);
         res.send(JSON.stringify(results));
     }
     var failureCallback = function(msg){
+        console.log(msg);
         res.send(msg);
     }
     var userid = common_fcns.getUserID(req);
-    db_cmds.createNewRandomPlaylist(userid, 'lmao', successCallback, failureCallback);
+    try {
+        db_cmds.createNewRandomPlaylist(userid, req.body.name, req.body.column, req.body.filter, req.body.length, successCallback, failureCallback);
+    } catch (e) {
+        failureCallback(e);
+    }
 }
