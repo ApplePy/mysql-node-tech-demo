@@ -254,28 +254,37 @@ exports.getPopularTracks = function(userid, successCallback, failureCallback) {
         }
     };
 
-    // NOTE: Inner SELECT finds all tracks that the user has access to, and the outer one gets all the info for those tracks, and counts the "likes"
+    // NOTE: Inner SELECTs finds all tracks that the user has access to and all the likes for the track, and the outer one gets all the info for those tracks
     db.query({
-            sql: "SELECT track.trackid, trackName, length AS trackLength, artistName, albumName, COUNT(usertracks.userID) AS likes " +
-            "FROM track " +
-            "JOIN usertracks ON track.trackID = usertracks.trackID " +
-            "JOIN albumordering ON track.trackID = albumordering.track " +
-            "JOIN album ON albumordering.album = album.albumID " +
-            "JOIN artist ON album.artist=artist.artistID " +
+            sql: "SELECT track.trackID AS trackid, track.trackName, track.length AS trackLength, artistName, albumName, likes " +
+            "FROM " +   // Get trackIDs and likes (likes include tracks that may not be accessible)
+            "( " +      // Get trackIDs that are accessible, but don't belong to the user
+            "SELECT trackID " +
+            "FROM usertracks " +
             "WHERE usertracks.userID != ? " +
-            "AND usertracks.trackID IN (" +
+            "AND usertracks.trackID IN ( " +
             "SELECT track.trackID " +
             "FROM track " +
-            "JOIN playlistordering ON track.trackID=playlistordering.trackID " +
-            "JOIN sharedplaylists ON sharedplaylists.playlist=playlistordering.playlistID " +
-            "JOIN musicgroupmembership AS mgm ON mgm.musicgroup=sharedplaylists.musicgroup " +
-            "WHERE mgm.user = ?" +
+            "JOIN playlistordering ON track.trackID = playlistordering.trackID " +
+            "JOIN sharedplaylists ON sharedplaylists.playlist = playlistordering.playlistID " +
+            "JOIN musicgroupmembership AS mgm ON mgm.musicgroup = sharedplaylists.musicgroup " +
+            "WHERE mgm.user = ? " +
             ") " +
+            ") AS accessibleTracks " +
+            "NATURAL JOIN ( " +     // Get number of users (outside of yourself) that has each track
+            "SELECT trackID, COUNT(userID) AS likes " +
+            "FROM usertracks " +
+            "WHERE usertracks.userID != ? " +
             "GROUP BY usertracks.trackID " +
+            ") AS trackLikes " +
+            "JOIN track ON accessibleTracks.trackID = track.trackID " +
+            "JOIN albumordering ON accessibleTracks.trackID = albumordering.track " +
+            "JOIN album ON albumordering.album = album.albumID " +
+            "JOIN artist ON album.artist = artist.artistID " +
+            "GROUP BY track.trackID " +
             "ORDER BY likes DESC " +
-            "LIMIT 50"
-            ,
-            values: [userid, userid]
+            "LIMIT 50",
+            values: [userid, userid, userid]
         },
         cb);
 };
