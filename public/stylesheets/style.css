@@ -39,6 +39,7 @@ a {
 .sidenav {
   padding-top: 20px;
   background-color: #f1f1f1;
+  text-align: center;
 }
 
 /* Set black background color, white text and some padding */
@@ -86,5 +87,10 @@ footer {
   border: 1px solid black;
   padding: 5px;
   font-family: "Franklin Gothic Book";
+}
+.titleArea {
+  font-family: "Franklin Gothic Book";
+  text-align: center;
+  font-size: larger;
 }
 

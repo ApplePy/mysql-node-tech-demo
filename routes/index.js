@@ -89,7 +89,11 @@ router.route('/settings')
         //delete function
     });
 
-
+router.route('/logout')
+    .post(function(req, res){
+        console.log('reached logout index');
+        common_fcns.logOut(res, req);
+    });
 
 
 

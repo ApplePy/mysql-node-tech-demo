@@ -29,8 +29,10 @@ html
                   p.navbar-text Welcome, #{errUser}
                 button(class = "btn btn-default navbar-btn" type="button" onclick = "location.href = '/settings'")
                   span.glyphicon(class="glyphicon-cog")
+                button(class = "btn btn-default navbar-btn" type="button" id = 'logout')
+                  span.glyphicon(class="glyphicon-remove-sign")
                 if !errSuggTrack
-                  p.navbar-text(class = "navbar-right") Suggested Track: #{trackID} | #{trackName} | #{artistName} | #{musicGroup}
+                  p.navbar-text(class = "navbar-right") Suggested Track: #{trackName} | #{artistName} | #{musicGroup}
                 else
                   p.navbar-text(class = "navbar-right") Suggested Track: #{errSuggTrack}
     block content

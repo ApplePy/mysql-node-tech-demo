@@ -5,16 +5,19 @@ block content
         div.row(class = "content")
             div.col-sm-8
                 div.row(class = "librarySubheader")
-                    div.dropdown
-                        button.btn(class = "btn-default dropdown-toggle" type="button" id="chooseTrackDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true") List tracks...
-                            span.caret
-                        ul.dropdown-menu(aria-labelledby="chooseTrackDropdown")
-                            li
-                                a(id="alltracks") All tracks (personal and group)
-                            li
-                                a(id="mytracks") Only my tracks
-                            li
-                                a(id="top50tracks") Top 50 Tracks You Need!
+                    div.col-sm-2
+                        div.dropdown
+                            button.btn(class = "btn-default dropdown-toggle" type="button" id="chooseTrackDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true") List tracks...
+                                span.caret
+                            ul.dropdown-menu(aria-labelledby="chooseTrackDropdown")
+                                li
+                                    a(id="alltracks") All tracks (personal and group)
+                                li
+                                    a(id="mytracks") Only my tracks
+                                li
+                                    a(id="top50tracks") Top 50 Tracks You Need!
+                    div.col-sm-10
+                        div.titleArea
                 div.scrollable(class = 'container-fluid')
                     div.trackListing
             div.col-sm-4(class = "sidenav")

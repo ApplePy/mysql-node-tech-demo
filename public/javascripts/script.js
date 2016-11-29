@@ -1,13 +1,30 @@
 /**
  * Created by danazagar on 2016-11-23.
  */
+
 $(document).ready(function(){
     $("#mytracks").on("click", getTracks);
     $("#top50tracks").on("click", getTop50Tracks);
     $("#alltracks").on("click", getAllTracksAccessible);
     $("#playlists").on("click", getPlaylists);
     $("#randomplaylist").on("click", genRandPlaylist);
+    $('#logout').on("click", logOut);
 });
+
+function logOut(){
+    $.ajax({
+        type:'POST',
+        data: {},
+        url: '/logout',
+        dataType: 'JSON',
+        success: function(data) {
+            if (data.redirect) {
+                // data.redirect contains the string URL to redirect to
+                window.location.replace(data.redirect);
+            }
+        }
+    });
+}
 
 /*function generateRandPlaylist() {
     $('.trackListing').empty();
@@ -48,22 +65,23 @@ function genRandPlaylist(){
     if (numTracks == 0 || numTracks == "") return alert('Please insert a value to determine the number of tracks.');
     if (filterVal != "") filterVal = '%' + filterVal + '%';
     else filterVal = '%';
-
+    $('.trackListing').empty();
     $.ajax({
         type:'POST',
         data: { name: newName, column: columnFilter, filter: filterVal, length: numTracks },
         url: '/api/randomplaylist',
         dataType: 'JSON'
     }).done(function(data){
+        var playlistObj = data.shift();
+        console.log(playlistObj);
+        console.log(data);
         var toJadeTracks = "";
         var toJadePlaylistWell = "";
-        var date = data[0].datetimeCreated.split('T');
-        toJadePlaylistWell += '<div class = "row trackrow">';
-        toJadePlaylistWell += '<p>' + data[0].playlistName + '  |  ' + date[0] + '  |  ' + data[0].username;
-        toJadePlaylistWell += '  |  <button onclick = "getPlaylistLength(' + data[0].playlistid + ')"> Get Current Length </button>';
-        toJadePlaylistWell += '<p class = "length' + data[0].playlistid + '"></p></p>';
-        toJadePlaylistWell += '</div>';
-        $.each(data[1], function () {
+        var date = playlistObj.datetimeCreated.split('T');
+        //toJadePlaylistWell += '<div class = "row">';
+        toJadePlaylistWell += '<p>Playlist: ' + playlistObj.playlistName + '  |  Date Created: ' + date[0] + '  |  Created By: ' + playlistObj.username;
+        //toJadePlaylistWell += '</div>';
+        $.each(data, function () {
             var minutes = Math.floor(this.trackLength / 60000);
             var seconds = Math.floor((this.trackLength % 60000) / 1000);
             var secondsFormatted = (seconds < 10 ? '0' : '') + seconds;
@@ -74,7 +92,8 @@ function genRandPlaylist(){
             toJadeTracks += '</div>';
         });
         $('.trackListing').append(toJadeTracks);
-        $('.playlistwell').append(toJadePlaylistWell);
+        $('.titleArea').append(toJadePlaylistWell);
+        //getPlaylists();
     });
 }
 

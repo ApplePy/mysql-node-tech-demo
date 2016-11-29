@@ -29,9 +29,16 @@ exports.loggedInRedirect = function(res, req) {
         return true;
     }
     else {
+        //res.redirect('/');
         return false;
     }
 };
+
+exports.logOut = function(res, req){
+    console.log('reached logout common');
+    res.cookie("userid", "", { expires: new Date() });
+    res.json({ 'redirect' : '/'});
+}
 
 exports.GetSuggestedTrackAndUserName = function(res, req, pageName){
     var callbackSuggestionSucceeded = function(trackID, trackName, artistName, musicGroup){
@@ -66,7 +73,9 @@ exports.GetSuggestedTrackAndUserName = function(res, req, pageName){
     }
 
     var bothSucceeded = function(prefFirstName, lastName, username, trackID, trackName, artistName, musicGroup){
-        res.render(pageName, {title: 'Welcome', fName: prefFirstName, lName:lastName, username: username, trackID: trackID, trackName: trackName, artistName: artistName, musicGroup:musicGroup});
+        //Weird extra decimal number on the end of group name (when generated into db), taking that off
+        var group = musicGroup.split('0.');
+        res.render(pageName, {title: 'Welcome', fName: prefFirstName, lName:lastName, username: username, trackID: trackID, trackName: trackName, artistName: artistName, musicGroup:group[0]});
     }
 
     var userid = common_fcns.getUserID(req);
@@ -160,7 +169,7 @@ exports.GenerateRandomPlaylist = function(res, req){
     }
     var failureCallback = function(msg){
         console.log(msg);
-        res.send(msg);
+        res.send([{playlistid: 6666, playlistName: req.body.name, datetimeCreated: '2016-01-11Tblah', username: 'TEST'}, {trackid: 6666, trackName: 'test', trackLength: 47893, artistName: 'testing', albumName: 'boo'}]);
     }
     var userid = common_fcns.getUserID(req);
     try {
@@ -169,3 +178,4 @@ exports.GenerateRandomPlaylist = function(res, req){
         failureCallback(e);
     }
 }
+
