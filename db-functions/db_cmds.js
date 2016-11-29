@@ -312,35 +312,21 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
 
     // Get user's tracks
     db.query({
-            sql: "SELECT track.trackID AS trackid, track.trackName, track.length AS trackLength, artistName, albumName, likes " +
-            "FROM " +   // Get trackIDs and likes (likes include tracks that may not be accessible)
-            "( " +      // Get trackIDs that are accessible, but don't belong to the user
-            "SELECT trackID " +
-            "FROM usertracks " +
-            "WHERE usertracks.userID != ? " +
-            "AND usertracks.trackID IN ( " +
-            "SELECT track.trackID " +
+            sql: "SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName " +
             "FROM track " +
-            "JOIN playlistordering ON track.trackID = playlistordering.trackID " +
-            "JOIN sharedplaylists ON sharedplaylists.playlist = playlistordering.playlistID " +
-            "JOIN musicgroupmembership AS mgm ON mgm.musicgroup = sharedplaylists.musicgroup " +
-            "WHERE mgm.user = ? " +
-            ") " +
-            ") AS accessibleTracks " +
-            "NATURAL JOIN ( " +     // Get number of users (outside of yourself) that has each track
-            "SELECT trackID, COUNT(userID) AS likes " +
-            "FROM usertracks " +
-            "WHERE usertracks.userID != ? " +
-            "GROUP BY usertracks.trackID " +
-            ") AS trackLikes " +
-            "JOIN track ON accessibleTracks.trackID = track.trackID " +
-            "JOIN albumordering ON accessibleTracks.trackID = albumordering.track " +
+            "JOIN usertracks ON track.trackID = usertracks.trackID " +
+            "JOIN albumordering ON track.trackID = albumordering.track " +
             "JOIN album ON albumordering.album = album.albumID " +
-            "JOIN artist ON album.artist = artist.artistID " +
+            "JOIN artist ON album.artist=artist.artistID " +
+            "WHERE usertracks.userID = ? " +
+            "OR track.trackID IN (" +
+            "SELECT trackID FROM playlistordering AS po " +
+            "JOIN sharedplaylists AS sp ON po.playlistID=sp.playlist " +
+            "JOIN musicgroupmembership AS mgm ON sp.musicgroup=mgm.musicgroup " +
+            "WHERE mgm.user = ?) " +
             "GROUP BY track.trackID " +
-            "ORDER BY likes DESC " +
-            "LIMIT 50",
-            values: [userid, userid, userid]
+            "ORDER BY artist.artistName, album.albumName, track.trackName",
+            values: [userid, userid]
         },
         cb);
 };
