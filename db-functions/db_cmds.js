@@ -365,9 +365,79 @@ exports.createNewRandomPlaylist = function(userid,
         }
     };
 
-    db.get().beginTransaction(function(err) {
+    db.inTransaction(db.get, function(apollo, next){
+        apollo.query({
+            sql:'INSERT INTO playlist(playlistName, datetimeCreated, createdBy) ' +
+                'VALUES(?, NOW(), ?)',
+            values: [playlistname, userid]
+        }, function (err){
+            if (err)
+                return next(err);
+            console.log('completed first query');
+
+            apollo.query({
+                sql:'SELECT playlistID, playlistName, datetimeCreated, createdBy '+
+                    'FROM playlist '+
+                    'WHERE playlistName = ? AND createdBy = ? '+
+                    'ORDER BY datetimeCreated DESC '+
+                    'LIMIT 1',
+                values: [playlistname, userid]
+            }, function(err, specialResult){
+                if (err || specialResult.length == 0)
+                    return next(err);
+                console.log('completed second query');
+
+                apollo.query({
+                    sql:'SET @position := 0'
+                }, function(err){
+                    if (err)
+                        return next(err);
+                    console.log('completed third query');
+
+                    apollo.query({
+                        sql:'INSERT INTO ' +
+                        'playlistordering(playlistID, trackID, position) ' +
+                        'SELECT ?, trackID, (@position := ifnull(@position, 0) + 1) ' +
+                        'FROM (SELECT trackID ' +
+                        'FROM track ' +
+                        'WHERE ? LIKE ? ' +
+                        'LIMIT 5) AS tid',
+                        values: [specialResult[0].playlistID, trackColumnFilter, filterValue]
+                    }, function(err){
+                        if (err)
+                            return next(err);
+                        console.log('completed fourth query');
+
+                        apollo.query({
+                            sql:'SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName ' +
+                            'FROM track ' +
+                            'JOIN artist ON track.artist = artist.artistID ' +
+                            'JOIN albumordering ON track.trackID = albumordering.track ' +
+                            'JOIN album ON albumordering.album = album.albumID ' +
+                            'JOIN playlistordering ON track.trackID = playlistordering.trackID ' +
+                            'WHERE playlistID = ? ' +
+                            'GROUP BY playlistordering.position ' +
+                            'ORDER BY playlistordering.position',
+                            values: [specialResult[0].playlistID]
+                        }, function(err, finalResult){
+                            if (err || finalResult.length == 0)
+                                return next(err);
+                            console.log('completed last query');
+                            return(finalResult);
+                        });
+                    });
+                });
+
+            });
+        });
+    }, cb);
+
+    /*db.get.beginTransaction(function(err) {
         // Can't start transaction, stop
-        if (err) { failureCallback(err); return;}
+        if (err) {
+            console.log('cant start transaction');
+            throw err;
+        }
 
         // Create new playlist for the user
         db.get().query({
@@ -379,6 +449,7 @@ exports.createNewRandomPlaylist = function(userid,
             // Create playlist failed, rollback and quit.
             if (err) {
                 return db.get().rollback(function() {
+                    console.log('first query failed');
                     throw err;
                 });
             }
@@ -396,6 +467,7 @@ exports.createNewRandomPlaylist = function(userid,
                 // Get playlist failed, rollback and quit.
                 if (err || specialresult.length == 0) {
                     return db.get().rollback(function() {
+                        console.log('second query failed');
                         throw err;
                     });
                 }
@@ -408,6 +480,7 @@ exports.createNewRandomPlaylist = function(userid,
                     // Reset position variable failed, rollback and exit
                     if (err) {
                         return db.get().rollback(function() {
+                            console.log('third query failed');
                             throw err;
                         });
                     }
@@ -420,12 +493,13 @@ exports.createNewRandomPlaylist = function(userid,
                         "FROM track " +
                         "WHERE ? LIKE ? " +
                         "LIMIT 20) AS tid",
-                        values:[specialresult[0].playlistID, trackColumnFilter, filterValue/*, playlistLength*/]
+                        values:[specialresult[0].playlistID, trackColumnFilter, filterValue, playlistLength]
                     }, function(err, result) {
 
                         // Random insert failed, rollback
                         if (err) {
                             return db.get().rollback(function() {
+                                console.log('fourth query failed');
                                 throw err;
                             });
                         }
@@ -446,6 +520,7 @@ exports.createNewRandomPlaylist = function(userid,
                             // Get tracks failed, rollback and quit.
                             if (err || finalresult.length == 0) {
                                 return db.get().rollback(function() {
+                                    console.log('fifth query failed');
                                     throw err;
                                 });
                             }
@@ -454,6 +529,7 @@ exports.createNewRandomPlaylist = function(userid,
                             db.get().commit(function(err) {
                                 if (err) {
                                     return db.get().rollback(function() {
+                                        console.log('commit failed');
                                         throw err;
                                     });
                                 }
@@ -463,7 +539,7 @@ exports.createNewRandomPlaylist = function(userid,
                 });
             });
         });
-    }, cb);
+    }, cb);*/
 };
 
 /** Get play time length of playlist.
@@ -530,3 +606,7 @@ exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCal
         },
         cb);
 };
+
+
+
+    ////////
