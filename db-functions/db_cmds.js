@@ -155,8 +155,6 @@ exports.updateUserPassword = function(userid, password, successCallback, failure
     console.log(userid);
     console.log(password);
     var cb = function(error, results){
-        console.log(error);
-        console.log(results);
         if (error) {
             failureCallback(error);
         }
@@ -467,4 +465,69 @@ exports.createNewRandomPlaylist = function(userid,
             });
         });
     });
+};
+
+/** Get play time length of playlist.
+ *
+ * @param playlistID        The playlist to count.
+ * @param successCallback   function(playtime) to be called when command succeeds. In milliseconds.
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.getPlaylistLength = function(playlistID, successCallback, failureCallback) {
+    // Call the appropriate callback
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else if (results.length == 0) {
+            failureCallback("Playlist has no tracks.");
+        }
+        else {
+            successCallback(results[0].playtime);
+        }
+    };
+
+    // Get user's tracks
+    db.query({
+            sql: "SELECT SUM(length) AS playtime " +
+            "FROM playlistordering AS po " +
+            "JOIN track ON track.trackID=po.trackID " +
+            "WHERE po.playlistID = ?",
+            values: [playlistID]
+        },
+        cb);
+};
+
+/** Gets all playlists accessible to a user.
+ *
+ * @param userid            The user to request accessible playlist for
+ * @param successCallback   function(results) to be called when command succeeds. 'results' format: [{playlistid, playlistName, datetimeCreated, username}, ...]
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCallback){
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else if (results.length == 0) {
+            failureCallback("User has no playlists to access.");
+        }
+        else {
+            successCallback(results);
+        }
+    };
+
+    //Get playlists
+    db.query({
+            sql: "SELECT playlist.playlistID AS playlistid, playlistName, datetimeCreated, user.username AS username " +
+            "FROM playlist " +
+            "LEFT JOIN sharedplaylists ON playlist.playlistID = sharedplaylists.playlist " +
+            "LEFT JOIN musicgroupmembership ON sharedplaylists.musicgroup = musicgroupmembership.musicgroup " +
+            "LEFT JOIN user ON playlist.createdBy = user.userID " +
+            "WHERE musicgroupmembership.user = ? " +
+            "OR playlist.createdBy = ? " +
+            "GROUP BY playlistID;",
+            values: [userid, userid]
+        },
+        cb);
 };
