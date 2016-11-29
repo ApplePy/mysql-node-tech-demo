@@ -11,18 +11,30 @@ $(document).ready(function(){
 
 function generateRandPlaylist() {
     $('.trackListing').empty();
+    $('.playlistwell').empty();
+
     $.getJSON('/api/randomplaylist', function (data) {
-        var toJade = "";
-        $.each(data, function () {
+        data.slice(1);
+        var toJadeTracks = "";
+        var toJadePlaylistWell = "";
+        var date = data[0].datetimeCreated.split('T');
+        toJadePlaylistWell += '<div class = "row trackrow">';
+        toJadePlaylistWell += '<p>' + data[0].playlistName + '  |  ' + date[0] + '  |  ' + data[0].username;
+        toJadePlaylistWell += '  |  <button onclick = "getPlaylistLength(' + data[0].playlistid + ')"> Get Current Length </button>';
+        toJadePlaylistWell += '<p class = "length' + data[0].playlistid + '"></p></p>';
+        toJadePlaylistWell += '</div>';
+        $.each(data[1], function () {
             var minutes = Math.floor(this.trackLength / 60000);
             var seconds = Math.floor((this.trackLength % 60000) / 1000);
             var secondsFormatted = (seconds < 10 ? '0' : '') + seconds;
-            toJade += '<div class = "row trackrow">';
-            toJade += '<div class = "col-md-3">' + this.trackName + '</div><div class = "col-md-1">' + minutes + ':' + secondsFormatted + '</div><div class = "col-md-2">' + this.artistName + '</div><div class = "col-md-3">' + this.albumName + '</div>';
-            toJade += '<div class = "col-md-2"><button onclick = "getLikes(' + this.trackid + ')"> Get Current Likes </button></div>'
-            toJade += '<div class = "col-md-1 likes' + this.trackid + '"></div></p>';
-            toJade += '</div>';
+            toJadeTracks += '<div class = "row trackrow">';
+            toJadeTracks += '<div class = "col-md-3">' + this.trackName + '</div><div class = "col-md-1">' + minutes + ':' + secondsFormatted + '</div><div class = "col-md-2">' + this.artistName + '</div><div class = "col-md-3">' + this.albumName + '</div>';
+            toJadeTracks += '<div class = "col-md-2"><button onclick = "getLikes(' + this.trackid + ')"> Get Current Likes </button></div>'
+            toJadeTracks += '<div class = "col-md-1 likes' + this.trackid + '"></div></p>';
+            toJadeTracks += '</div>';
         });
+        $('.trackListing').append(toJadeTracks);
+        $('.playlistwell').append(toJadePlaylistWell);
     })
 }
 

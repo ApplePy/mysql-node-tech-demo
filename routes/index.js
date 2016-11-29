@@ -134,6 +134,11 @@ api.route('/playlists/:playlist_id')
         common_fcns.getPlaylistLength(res, req, req.params.playlist_id);
     });
 
+api.route('/randomplaylist')
+    .get(function(req, res){
+        common_fcns.GenerateRandomPlaylist(res, req);
+    })
+
 // Wire up router
 router.use('/api', api);
 

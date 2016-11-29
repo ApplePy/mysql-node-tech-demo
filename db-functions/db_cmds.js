@@ -352,9 +352,9 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
  */
 exports.createNewRandomPlaylist = function(userid,
                                            playlistname,
-                                           trackColumnFilter,
-                                           filterValue,
-                                           playlistLength,
+                                           //trackColumnFilter,
+                                           //filterValue,
+                                           //playlistLength,
                                            successCallback,
                                            failureCallback) {
     // Call the appropriate callback
@@ -442,7 +442,7 @@ exports.createNewRandomPlaylist = function(userid,
                             "WHERE playlistID = ? " +
                             "GROUP BY playlistordering.position " +
                             "ORDER BY playlistordering.position",
-                            values:[specialresult[0].playlistID,]
+                            values:[specialresult[0].playlistID]
                         },function(err, finalresult) {
 
                             // Get tracks failed, rollback and quit.

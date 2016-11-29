@@ -151,3 +151,15 @@ exports.changePassword = function(res, req){
     var password = req.body.password;
     db_cmds.updateUserPassword(userid, password, successCallback, failureCallback);
 }
+
+exports.GenerateRandomPlaylist = function(res, req){
+    var successCallback = function(results){
+        console.log('Results at common: ' + results);
+        res.send(JSON.stringify(results));
+    }
+    var failureCallback = function(msg){
+        res.send(msg);
+    }
+    var userid = common_fcns.getUserID(req);
+    db_cmds.createNewRandomPlaylist(userid, 'lmao', successCallback, failureCallback);
+}
