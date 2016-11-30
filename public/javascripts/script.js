@@ -103,7 +103,6 @@ function getAllTracksAccessible(){
  * formats each track into HTML row and appends to appropriate HTML div.
  */
 function getPlaylists(){
-    $('.titleArea').empty();
     $('.playlistwell').empty();
 
     $.getJSON(('/api/playlists'), function(data){
