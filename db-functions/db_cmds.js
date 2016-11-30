@@ -419,10 +419,9 @@ exports.createNewRandomPlaylist = function(userid,
                                                 "FROM (SELECT trackID " +
                                                 "FROM track " +
                                                 "NATURAL JOIN usertracks " +
-                                                "WHERE ? LIKE ? " +
-                                                "AND usertracks.userID = ?" +
-                                                "LIMIT 20) AS tid",
-                                                values: [specialresult[0].playlistID, "track." + trackColumnFilter, filterValue, userid/*, playlistLength*/]
+                                                "WHERE usertracks.userID = ?" +
+                                                "LIMIT ?) AS tid",
+                                                values: [specialresult[0].playlistID, userid, parseInt(playlistLength)]
                                             }).then(
                                                 ()=>{
                                                     promiseFactory(connection.commit.bind(connection))       // COMMIT LINE HERE
