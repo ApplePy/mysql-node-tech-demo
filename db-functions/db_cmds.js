@@ -533,3 +533,24 @@ exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCal
         },
         cb);
 };
+
+
+/** Deletes a user.
+ *
+ * @param userid            The user to delete.
+ * @param successCallback   function() that is called when the task succeeds.
+ * @param failureCallback   function(msg) that is called when the task fails.
+ */
+exports.deleteUser = function(userid, successCallback, failureCallback) {
+    var cb = function(error, ){
+        if (error) failureCallback(error);
+        else successCallback();
+    };
+
+    //Get playlists
+    db.query({
+            sql: "DELETE FROM users WHERE userid = ?",
+            values: [userid,]
+        },
+        cb);
+};
