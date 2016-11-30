@@ -86,9 +86,10 @@ router.route('/create-user')
         };
         if (username.replace(/\s+/g, '') == "" || password.replace(/\s+/g, '') == "" || firstname.replace(/\s+/g, '') == "" || lastname.replace(/\s+/g, '') == ""){
             failureCallback('None of these fields can be empty. Please try again.');
+        } else {
+            // Check credentials
+            db_cmds.createUser(username, password, firstname, lastname, successCallback, failureCallback);
         }
-        // Check credentials
-        db_cmds.createUser(username, password, firstname, lastname, successCallback, failureCallback);
     });
 
 
