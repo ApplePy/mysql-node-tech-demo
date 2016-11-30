@@ -439,7 +439,7 @@ exports.createNewRandomPlaylist = function(userid,
                                 }
 
                                 db.query({
-                                    sql: "SELECT track.trackID AS trackid, trackName, length, artistName, albumName " +
+                                    sql: "SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName " +
                                     "FROM track " +
                                     "JOIN artist ON track.artist = artist.artistID " +
                                     "JOIN albumordering ON track.trackID = albumordering.track " +
