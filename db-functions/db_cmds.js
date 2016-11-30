@@ -536,7 +536,7 @@ exports.deleteUser = function(userid, successCallback, failureCallback) {
 
     // Delete user
     db.query({
-            sql: "DELETE FROM users WHERE userid = ?",
+            sql: "DELETE FROM users WHERE userID = ?",
             values: [userid,]
         },
         cb);
