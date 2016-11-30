@@ -15,9 +15,8 @@ exports.suggestedTrack = function (userid, successCallback, failureCallback) {
 
     // Call failure callback on failure or no results, call successCallback with results if success.
     var cb = function(error, results) {
-        if (error || results.length == 0) {
+        if (error || results.length == 0)
             failureCallback();
-        }
         else {
             var res = results[0];
             successCallback(res.trackID, res.trackName, res.artistName, res.musicgroupName);
@@ -66,12 +65,10 @@ exports.loginUser = function(username, password, successCallback, failureCallbac
 
     // Call successCallback with userID if success, call failureCallback if false
     var cbmiddle = function(error, results){
-        if (error) {
+        if (error)
             failureCallback();
-        }
-        else if (results.length == 0) {
+        else if (results.length == 0)
             failureCallback();
-        }
         else {
             var userid = results[0].userID;
             successCallback(userid);
@@ -102,9 +99,8 @@ exports.loginUser = function(username, password, successCallback, failureCallbac
 exports.createUser = function(username, password, prefFirstName, lastName, successCallback, failureCallback){
     // Call loginUser to retrieve User ID on create user success, call failureCallback with a message otherwise
     var cbmiddle1 = function(error, results){
-        if (error) {
+        if (error)
             failureCallback(error);
-        }
         else {
             // Apply msg, since loginuser cb doesn't take an arg
             var failure = function() {failureCallback("Undefined error.")};
@@ -131,12 +127,10 @@ exports.createUser = function(username, password, prefFirstName, lastName, succe
 exports.getUserFullNameAndUsername = function(userid, successCallback, failureCallback) {
     // Call loginUser to retrieve User ID on create user success, call failureCallback with a message otherwise
     var cb = function(error, results){
-        if (error) {
+        if (error)
             failureCallback(error);
-        }
-        else if (results.length == 0) {
+        else if (results.length == 0)
             failureCallback("User not found.");
-        }
         else {
             // Apply msg, since loginuser cb doesn't take an arg
             var failure = function() {failureCallback("Undefined error.")};
@@ -164,12 +158,10 @@ exports.updateUserPassword = function(userid, password, successCallback, failure
     console.log(userid);
     console.log(password);
     var cb = function(error, results){
-        if (error) {
+        if (error)
             failureCallback(error);
-        }
-        else {
+        else
             successCallback(results);
-        }
     };
 
     // Update user with new password
@@ -192,15 +184,12 @@ exports.updateUserPassword = function(userid, password, successCallback, failure
 exports.getAllUserTracks = function(userid, successCallback, failureCallback) {
     // Call the appropriate callback
     var cb = function(error, results){
-        if (error) {
+        if (error)
             failureCallback(error);
-        }
-        else if (results.length == 0) {
+        else if (results.length == 0)
             failureCallback("User has no tracks.");
-        }
-        else {
+        else
             successCallback(results);
-        }
     };
 
     // Get user's tracks
@@ -228,12 +217,10 @@ exports.getAllUserTracks = function(userid, successCallback, failureCallback) {
 exports.getLikes = function(userid, trackid, successCallback, failureCallback) {
     // Call the appropriate callback
     var cb = function(error, results){
-        if (error) {
+        if (error)
             failureCallback(error);
-        }
-        else {
+        else
             successCallback(results[0].likes);
-        }
     };
 
     // Get user's track's likes
@@ -255,12 +242,10 @@ exports.getLikes = function(userid, trackid, successCallback, failureCallback) {
 exports.getPopularTracks = function(userid, successCallback, failureCallback) {
     // Call the appropriate callback
     var cb = function(error, results){
-        if (error) {
+        if (error)
             failureCallback(error);
-        }
-        else {
+        else
             successCallback(results);
-        }
     };
 
     // NOTE: Inner SELECTs finds all tracks that the user has access to and all the likes for the track, and the outer one gets all the info for those tracks
@@ -308,15 +293,12 @@ exports.getPopularTracks = function(userid, successCallback, failureCallback) {
 exports.getAllTracksAccessible = function(userid, successCallback, failureCallback) {
     // Call the appropriate callback
     var cb = function(error, results){
-        if (error) {
+        if (error)
             failureCallback(error);
-        }
-        else if (results.length == 0) {
+        else if (results.length == 0)
             failureCallback("User has no tracks to access.");
-        }
-        else {
+        else
             successCallback(results);
-        }
     };
 
     // Get user's tracks, where inner SELECT gets all the tracks the user does not own
@@ -488,15 +470,12 @@ exports.createNewRandomPlaylist = function(userid,
 exports.getPlaylistLength = function(playlistID, successCallback, failureCallback) {
     // Call the appropriate callback
     var cb = function(error, results){
-        if (error) {
+        if (error)
             failureCallback(error);
-        }
-        else if (results.length == 0) {
+        else if (results.length == 0)
             failureCallback("Playlist has no tracks.");
-        }
-        else {
+        else
             successCallback(results[0].playtime);
-        }
     };
 
     // Get user's tracks
@@ -519,15 +498,12 @@ exports.getPlaylistLength = function(playlistID, successCallback, failureCallbac
  */
 exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCallback){
     var cb = function(error, results){
-        if (error) {
+        if (error)
             failureCallback(error);
-        }
-        else if (results.length == 0) {
+        else if (results.length == 0)
             failureCallback("User has no playlists to access.");
-        }
-        else {
+        else
             successCallback(results);
-        }
     };
 
     //Get playlists, including ones not shared by the requesting user

@@ -41,7 +41,7 @@ exports.connect = function(mode, done) {
 
     state.mode = mode;
     done();
-}
+};
 
 /**
  * Convenience function to query.
