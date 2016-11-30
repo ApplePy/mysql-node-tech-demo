@@ -569,15 +569,15 @@ exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCal
  * @param failureCallback   function(msg) that is called when the task fails.
  */
 exports.deleteUser = function(userid, successCallback, failureCallback) {
-    var cb = function(error, ){
+    var cb = function(error){
         if (error) failureCallback(error);
         else successCallback();
     };
 
     //Get playlists
     db.query({
-            sql: "DELETE FROM users WHERE userid = ?",
-            values: [userid,]
+            sql: "DELETE FROM user WHERE userid = ?",
+            values: [userid]
         },
         cb);
 };

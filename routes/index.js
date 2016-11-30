@@ -91,11 +91,13 @@ router.route('/settings')
 
 router.route('/logout')
     .post(function(req, res){
-        console.log('reached logout index');
         common_fcns.logOut(res, req);
     });
 
-
+router.route('/deleteAccount')
+    .post(function(req, res){
+        common_fcns.deleteAccount(res, req);
+    });
 
 // ---- API ---- //
 

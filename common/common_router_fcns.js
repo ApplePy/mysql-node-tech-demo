@@ -29,15 +29,31 @@ exports.loggedInRedirect = function(res, req) {
         return true;
     }
     else {
-        //res.redirect('/');
         return false;
     }
 };
 
 exports.logOut = function(res, req){
-    console.log('reached logout common');
     res.cookie("userid", "", { expires: new Date() });
     res.json({ 'redirect' : '/'});
+}
+
+exports.deleteAccount = function(res, req){
+    var successCallback = function(results){
+        console.log('success');
+        res.cookie("userid", "", { expires: new Date() });
+        res.json({ 'redirect' : '/'});
+    }
+    var failureCallback = function(msg){
+        console.log(msg);
+        res.send(msg);
+    }
+    var userid = common_fcns.getUserID(req);
+    try {
+        db_cmds.deleteUser(userid, successCallback, failureCallback);
+    } catch (e) {
+        failureCallback(e);
+    }
 }
 
 exports.GetSuggestedTrackAndUserName = function(res, req, pageName){
@@ -162,13 +178,10 @@ exports.changePassword = function(res, req){
 }
 
 exports.GenerateRandomPlaylist = function(res, req){
-    console.log('reached common fcns');
     var successCallback = function(results){
-        console.log('Results at common: ' + results);
         res.send(JSON.stringify(results));
     }
     var failureCallback = function(msg){
-        console.log(msg);
         res.send(msg);
     }
     var userid = common_fcns.getUserID(req);
