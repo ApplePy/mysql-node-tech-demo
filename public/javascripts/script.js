@@ -19,7 +19,7 @@ $(document).ready(function(){
  * appropriate HTML div.
  */
 function getTracks(){
-
+    $('.titleArea').empty();
     $('.trackListing').empty();
 
     $.getJSON('/api/mytracks', function(data){
@@ -47,7 +47,7 @@ function getTracks(){
  * appropriate HTML div.
  */
 function getTop50Tracks(){
-
+    $('.titleArea').empty();
     $('.trackListing').empty();
 
     $.getJSON('/api/top50tracks', function(data){
@@ -75,7 +75,7 @@ function getTop50Tracks(){
  * formats each track into HTML row and appends to appropriate HTML div.
  */
 function getAllTracksAccessible(){
-
+    $('.titleArea').empty();
     $('.trackListing').empty();
 
     $.getJSON('/api/alltracks', function(data){
@@ -103,7 +103,7 @@ function getAllTracksAccessible(){
  * formats each track into HTML row and appends to appropriate HTML div.
  */
 function getPlaylists(){
-
+    $('.titleArea').empty();
     $('.playlistwell').empty();
 
     $.getJSON(('/api/playlists'), function(data){
@@ -130,7 +130,7 @@ function getPlaylists(){
  * appropriate HTML div. Refreshes playlist well to reflect new playlist addition.
  */
 function genRandPlaylist(){
-
+    $('.titleArea').empty();
     var newName = prompt('Please enter a playlist name: ', 'Type your new playlist name here.');
     if (newName == "") return alert('Name cannot be blank. Please try again.');
 
