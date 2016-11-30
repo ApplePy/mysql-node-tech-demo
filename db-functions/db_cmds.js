@@ -254,54 +254,7 @@ exports.getPopularTracks = function(userid, successCallback, failureCallback) {
         }
     };
 
-    // NOTE: Inner SELECT finds all tracks that the user has access to, and the outer one gets all the info for those tracks, and counts the "likes"
-    db.query({
-            sql: "SELECT track.trackid, trackName, length AS trackLength, artistName, albumName, COUNT(usertracks.userID) AS likes " +
-            "FROM track " +
-            "JOIN usertracks ON track.trackID = usertracks.trackID " +
-            "JOIN albumordering ON track.trackID = albumordering.track " +
-            "JOIN album ON albumordering.album = album.albumID " +
-            "JOIN artist ON album.artist=artist.artistID " +
-            "WHERE usertracks.userID != ? " +
-            "AND usertracks.trackID IN (" +
-            "SELECT track.trackID " +
-            "FROM track " +
-            "JOIN playlistordering ON track.trackID=playlistordering.trackID " +
-            "JOIN sharedplaylists ON sharedplaylists.playlist=playlistordering.playlistID " +
-            "JOIN musicgroupmembership AS mgm ON mgm.musicgroup=sharedplaylists.musicgroup " +
-            "WHERE mgm.user = ?" +
-            ") " +
-            "GROUP BY usertracks.trackID " +
-            "ORDER BY likes DESC " +
-            "LIMIT 50"
-            ,
-            values: [userid, userid]
-        },
-        cb);
-};
-
-
-/** Get all tracks that a user can access.
- *
- * @param userid            The userID to check.
- * @param successCallback   function(result) to be called when command succeeds. 'result' structure: [{trackid, trackName, length, artistName, albumName}, {...}]
- * @param failureCallback   function(error) to be called when command fails. Contains error text.
- */
-exports.getAllTracksAccessible = function(userid, successCallback, failureCallback) {
-    // Call the appropriate callback
-    var cb = function(error, results){
-        if (error) {
-            failureCallback(error);
-        }
-        else if (results.length == 0) {
-            failureCallback("User has no tracks to access.");
-        }
-        else {
-            successCallback(results);
-        }
-    };
-
-    // Get user's tracks
+    // NOTE: Inner SELECTs finds all tracks that the user has access to and all the likes for the track, and the outer one gets all the info for those tracks
     db.query({
             sql: "SELECT track.trackID AS trackid, track.trackName, track.length AS trackLength, artistName, albumName, likes " +
             "FROM " +   // Get trackIDs and likes (likes include tracks that may not be accessible)
@@ -337,7 +290,48 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
 };
 
 
-// TODO: WARNING: TOTALLY UNTESTED.
+/** Get all tracks that a user can access.
+ *
+ * @param userid            The userID to check.
+ * @param successCallback   function(result) to be called when command succeeds. 'result' structure: [{trackid, trackName, length, artistName, albumName}, {...}]
+ * @param failureCallback   function(error) to be called when command fails. Contains error text.
+ */
+exports.getAllTracksAccessible = function(userid, successCallback, failureCallback) {
+    // Call the appropriate callback
+    var cb = function(error, results){
+        if (error) {
+            failureCallback(error);
+        }
+        else if (results.length == 0) {
+            failureCallback("User has no tracks to access.");
+        }
+        else {
+            successCallback(results);
+        }
+    };
+
+    // Get user's tracks
+    db.query({
+            sql: "SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName " +
+            "FROM track " +
+            "JOIN usertracks ON track.trackID = usertracks.trackID " +
+            "JOIN albumordering ON track.trackID = albumordering.track " +
+            "JOIN album ON albumordering.album = album.albumID " +
+            "JOIN artist ON album.artist=artist.artistID " +
+            "WHERE usertracks.userID = ? " +
+            "OR track.trackID IN (" +
+            "SELECT trackID FROM playlistordering AS po " +
+            "JOIN sharedplaylists AS sp ON po.playlistID=sp.playlist " +
+            "JOIN musicgroupmembership AS mgm ON sp.musicgroup=mgm.musicgroup " +
+            "WHERE mgm.user = ?) " +
+            "GROUP BY track.trackID " +
+            "ORDER BY artist.artistName, album.albumName, track.trackName",
+            values: [userid, userid]
+        },
+        cb);
+};
+
+
 /** Create a new random playlist.
  *
  * @param userid                The userid for who will own the new playlist.
@@ -365,181 +359,138 @@ exports.createNewRandomPlaylist = function(userid,
         }
     };
 
-    db.inTransaction(db.get, function(apollo, next){
-        apollo.query({
-            sql:'INSERT INTO playlist(playlistName, datetimeCreated, createdBy) ' +
-                'VALUES(?, NOW(), ?)',
-            values: [playlistname, userid]
-        }, function (err){
-            if (err)
-                return next(err);
-            console.log('completed first query');
-
-            apollo.query({
-                sql:'SELECT playlistID, playlistName, datetimeCreated, createdBy '+
-                    'FROM playlist '+
-                    'WHERE playlistName = ? AND createdBy = ? '+
-                    'ORDER BY datetimeCreated DESC '+
-                    'LIMIT 1',
-                values: [playlistname, userid]
-            }, function(err, specialResult){
-                if (err || specialResult.length == 0)
-                    return next(err);
-                console.log('completed second query');
-
-                apollo.query({
-                    sql:'SET @position := 0'
-                }, function(err){
-                    if (err)
-                        return next(err);
-                    console.log('completed third query');
-
-                    apollo.query({
-                        sql:'INSERT INTO ' +
-                        'playlistordering(playlistID, trackID, position) ' +
-                        'SELECT ?, trackID, (@position := ifnull(@position, 0) + 1) ' +
-                        'FROM (SELECT trackID ' +
-                        'FROM track ' +
-                        'WHERE ? LIKE ? ' +
-                        'LIMIT 5) AS tid',
-                        values: [specialResult[0].playlistID, trackColumnFilter, filterValue]
-                    }, function(err){
-                        if (err)
-                            return next(err);
-                        console.log('completed fourth query');
-
-                        apollo.query({
-                            sql:'SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName ' +
-                            'FROM track ' +
-                            'JOIN artist ON track.artist = artist.artistID ' +
-                            'JOIN albumordering ON track.trackID = albumordering.track ' +
-                            'JOIN album ON albumordering.album = album.albumID ' +
-                            'JOIN playlistordering ON track.trackID = playlistordering.trackID ' +
-                            'WHERE playlistID = ? ' +
-                            'GROUP BY playlistordering.position ' +
-                            'ORDER BY playlistordering.position',
-                            values: [specialResult[0].playlistID]
-                        }, function(err, finalResult){
-                            if (err || finalResult.length == 0)
-                                return next(err);
-                            console.log('completed last query');
-                            return(finalResult);
-                        });
-                    });
-                });
-
-            });
-        });
-    }, cb);
-
-    /*db.get.beginTransaction(function(err) {
-        // Can't start transaction, stop
-        if (err) {
-            console.log('cant start transaction');
-            throw err;
-        }
-
-        // Create new playlist for the user
-        db.get().query({
-                sql:'INSERT INTO playlist(playlistName, datetimeCreated, createdBy) ' +
-                'VALUES(?, NOW(), ?)',
-                values:[playlistname, userid]
-            }, function(err, result) {
-
-            // Create playlist failed, rollback and quit.
+    db.get().getConnection(function(err, connection) {
+        connection.query ("START TRANSACTION READ WRITE", function (err) {
+            // Can't start transaction, stop
             if (err) {
-                return db.get().rollback(function() {
-                    console.log('first query failed');
-                    throw err;
-                });
+                connection.release(); failureCallback(err);
+                return;
             }
 
-            db.query({
-                sql:"SELECT playlistID, playlistName, datetimeCreated, username " +
-                "FROM playlist " +
-                "JOIN user ON createdBy=user.userID " +
-                "WHERE playlistName = ? AND createdBy = ? " +
-                "ORDER BY datetimeCreated DESC " +
-                "LIMIT 1",
+            // Create new playlist for the user
+            connection.query({
+                sql: 'INSERT INTO playlist(playlistName, datetimeCreated, createdBy) ' +
+                'VALUES(?, NOW(), ?)',
                 values: [playlistname, userid]
-            }, function(err, specialresult) {
+            }, function (err, result) {
 
-                // Get playlist failed, rollback and quit.
-                if (err || specialresult.length == 0) {
-                    return db.get().rollback(function() {
-                        console.log('second query failed');
-                        throw err;
+                // Create playlist failed, rollback and quit.
+                if (err) {
+                    return connection.rollback(function () {
+                        connection.release(); failureCallback(err);
                     });
                 }
 
-                db.query({
-                    sql:"SET @position := 0",
-                    values: []
-                }, function(err, result) {
+                connection.query({
+                    sql: "SELECT playlistID, playlistName, datetimeCreated, username " +
+                    "FROM playlist " +
+                    "JOIN user ON createdBy=user.userID " +
+                    "WHERE playlistName = ? AND createdBy = ? " +
+                    "ORDER BY datetimeCreated DESC " +
+                    "LIMIT 1",
+                    values: [playlistname, userid]
+                }, function (err, specialresult) {
 
-                    // Reset position variable failed, rollback and exit
-                    if (err) {
-                        return db.get().rollback(function() {
-                            console.log('third query failed');
-                            throw err;
+                    // Get playlist failed, rollback and quit.
+                    if (err || specialresult.length == 0) {
+                        return connection.rollback(function () {
+                            connection.release(); failureCallback(err);
                         });
                     }
 
-                    db.query({
-                        sql:"INSERT INTO " +
-                        "playlistordering(playlistID, trackID, position) " +
-                        "SELECT ?, trackID, (@position := ifnull(@position, 0) + 1)" +
-                        "FROM (SELECT trackID " +
-                        "FROM track " +
-                        "WHERE ? LIKE ? " +
-                        "LIMIT 20) AS tid",
-                        values:[specialresult[0].playlistID, trackColumnFilter, filterValue, playlistLength]
-                    }, function(err, result) {
+                    connection.query({
+                        sql: "SET @position := 0",
+                        values: []
+                    }, function (err, result) {
 
-                        // Random insert failed, rollback
+                        // Reset position variable failed, rollback and exit
                         if (err) {
-                            return db.get().rollback(function() {
-                                console.log('fourth query failed');
-                                throw err;
+                            return connection.rollback(function () {
+                                connection.release(); failureCallback(err);
                             });
                         }
 
-                        db.query({
-                            sql:"SELECT track.trackID AS trackid, trackName, length, artistName, albumName " +
+                        connection.query({
+                            sql: "INSERT INTO " +
+                            "playlistordering(playlistID, trackID, position) " +
+                            "SELECT ?, trackID, (@position := ifnull(@position, 0) + 1)" +
+                            "FROM (SELECT trackID " +
                             "FROM track " +
-                            "JOIN artist ON track.artist = artist.artistID " +
-                            "JOIN albumordering ON track.trackID = albumordering.track " +
-                            "JOIN album ON albumordering.album = album.albumID " +
-                            "JOIN playlistordering ON track.trackID = playlistordering.trackID " +
-                            "WHERE playlistID = ? " +
-                            "GROUP BY playlistordering.position " +
-                            "ORDER BY playlistordering.position",
-                            values:[specialresult[0].playlistID]
-                        },function(err, finalresult) {
+                            "WHERE ? LIKE ? " +
+                            "LIMIT 20) AS tid",
+                            values: [specialresult[0].playlistID, trackColumnFilter, filterValue/*, playlistLength*/]
+                        }, function (err, result) {
 
-                            // Get tracks failed, rollback and quit.
-                            if (err || finalresult.length == 0) {
-                                return db.get().rollback(function() {
-                                    console.log('fifth query failed');
-                                    throw err;
+                            // Random insert failed, rollback
+                            if (err) {
+                                return connection.rollback(function () {
+                                    connection.release(); failureCallback(err);
                                 });
                             }
 
-                            // GREAT! Commit and return
-                            db.get().commit(function(err) {
+                            // Commit success and then retrieve
+                            connection.commit(function(err){
                                 if (err) {
-                                    return db.get().rollback(function() {
-                                        console.log('commit failed');
-                                        throw err;
+                                    return connection.rollback(function () {
+                                        connection.release(); failureCallback(err);
                                     });
                                 }
+
+                                db.query({
+                                    sql: "SELECT track.trackID AS trackid, trackName, length, artistName, albumName " +
+                                    "FROM track " +
+                                    "JOIN artist ON track.artist = artist.artistID " +
+                                    "JOIN albumordering ON track.trackID = albumordering.track " +
+                                    "JOIN album ON albumordering.album = album.albumID " +
+                                    "JOIN playlistordering ON track.trackID = playlistordering.trackID " +
+                                    "WHERE playlistID = ? " +
+                                    "GROUP BY playlistordering.position " +
+                                    "ORDER BY playlistordering.position",
+                                    values: [specialresult[0].playlistID]
+                                }, function (err, finalresult) {
+
+                                    // Get tracks failed, rollback and quit.
+                                    if (err || finalresult.length == 0) {
+                                        return connection.rollback(function () {
+                                            return connection.query({
+                                                sql: "DELETE FROM playlist WHERE playlistID = ?",
+                                                values: [specialresult[0].playlistID]
+                                            }, function(err2, result){
+                                                connection.release(); failureCallback(err);
+                                            });
+                                        });
+                                    }
+
+                                    // GREAT! Commit and return
+                                    connection.commit(function (err) {
+                                        if (err) {
+                                            return connection.rollback(function () {
+                                                return connection.query({
+                                                    sql: "DELETE FROM playlist WHERE playlistID = ?",
+                                                    values: [specialresult[0].playlistID]
+                                                }, function(err2, result){
+                                                    connection.release(); failureCallback(err);
+                                                });
+                                            });
+                                        }
+
+                                        // Construct final data
+                                        var refinedFinalData = {
+                                            metadata: specialresult[0],
+                                            contents: finalresult
+                                        };
+
+                                        connection.release();
+                                        successCallback(refinedFinalData);
+                                    });
+                                });
                             });
                         });
                     });
                 });
             });
         });
-    }, cb);*/
+    });
 };
 
 /** Get play time length of playlist.
@@ -606,7 +557,3 @@ exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCal
         },
         cb);
 };
-
-
-
-    ////////
