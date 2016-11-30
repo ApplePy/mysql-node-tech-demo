@@ -416,9 +416,11 @@ exports.createNewRandomPlaylist = function(userid,
                             "SELECT ?, trackID, (@position := ifnull(@position, 0) + 1)" +
                             "FROM (SELECT trackID " +
                             "FROM track " +
+                            "NATURAL JOIN usertracks " +
                             "WHERE ? LIKE ? " +
+                            "AND usertracks.userID = ?" +
                             "LIMIT 20) AS tid",
-                            values: [specialresult[0].playlistID, trackColumnFilter, filterValue/*, playlistLength*/]
+                            values: [specialresult[0].playlistID, "track." + trackColumnFilter, filterValue, userid/*, playlistLength*/]
                         }, function (err, result) {
 
                             // Random insert failed, rollback
