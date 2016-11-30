@@ -3,6 +3,7 @@
  */
 
 var db = require('../db');
+var Promise = require('promise');
 
 /** Get suggested user track.
  *
@@ -349,150 +350,114 @@ exports.createNewRandomPlaylist = function(userid,
                                            playlistLength,
                                            successCallback,
                                            failureCallback) {
-    // Call the appropriate callback
-    var cb = function(error, results){
-        if (error) {
-            failureCallback(error);
-        }
-        else {
-            successCallback(results);
-        }
+
+    /** Promise factory to wrap all the DB calls and error checking
+     *
+     * @param func                  The db function to call.
+     * @param queryObj              The query object to pass to the db (can be null)
+     * @param badResultPredicate    A function(result):boolean that specifies if a result is bad(true) or good (false), can be null
+     * @returns {Promise}           Returns a promise to run.
+     */
+    let promiseFactory = (func, queryObj, badResultPredicate)=>{
+        return new Promise(function(resolve, reject) {
+            // The callback to be passed to func.
+            var callback = function (err, result) {
+                // If the function failed, or the result fails the predicate (if one exists), reject.
+                if (typeof badResultPredicate == "function")
+                    if (err || badResultPredicate(result)) reject(err, result);
+                    // Otherwise resolve
+                    else resolve(result);
+                else
+                    if (err) reject(err, result);
+                    // Otherwise resolve
+                    else resolve(result);
+            };
+
+            // Call function
+            // If there is a query object, add it
+            if (queryObj != null)
+                func(queryObj, callback);
+            else
+                func(callback);
+        });
     };
 
-    db.get().getConnection(function(err, connection) {
-        connection.query ("START TRANSACTION READ WRITE", function (err) {
-            // Can't start transaction, stop
-            if (err) {
-                connection.release(); failureCallback(err);
-                return;
-            }
+    // Get a stable, non-closing connection to the DB
+    // NOTE: DO NOT THROW! MySQLJS catches them and then causes issues.
+    promiseFactory(db.get().getConnection.bind(db.get())).then(
+        connection=>{
+            let transactErr     = (err, result)=>{connection.release.bind(connection)(); failureCallback(err);};
+            let rollbackErr     = (err, result)=>connection.rollback.bind(connection)(()=>{transactErr(err)});
+            let postCommitErr   = function(err, result) {return connection.rollback.bind(connection)(()=>connection.query.bind(connection)({
+                sql: "DELETE FROM playlist WHERE playlistID = ?",
+                values: [this.specialresult[0].playlistID]
+            }, transactErr))};
 
-            // Create new playlist for the user
-            connection.query({
-                sql: 'INSERT INTO playlist(playlistName, datetimeCreated, createdBy) ' +
-                'VALUES(?, NOW(), ?)',
-                values: [playlistname, userid]
-            }, function (err, result) {
-
-                // Create playlist failed, rollback and quit.
-                if (err) {
-                    return connection.rollback(function () {
-                        connection.release(); failureCallback(err);
-                    });
-                }
-
-                connection.query({
-                    sql: "SELECT playlistID, playlistName, datetimeCreated, username " +
-                    "FROM playlist " +
-                    "JOIN user ON createdBy=user.userID " +
-                    "WHERE playlistName = ? AND createdBy = ? " +
-                    "ORDER BY datetimeCreated DESC " +
-                    "LIMIT 1",
-                    values: [playlistname, userid]
-                }, function (err, specialresult) {
-
-                    // Get playlist failed, rollback and quit.
-                    if (err || specialresult.length == 0) {
-                        return connection.rollback(function () {
-                            connection.release(); failureCallback(err);
-                        });
-                    }
-
-                    connection.query({
-                        sql: "SET @position := 0",
-                        values: []
-                    }, function (err, result) {
-
-                        // Reset position variable failed, rollback and exit
-                        if (err) {
-                            return connection.rollback(function () {
-                                connection.release(); failureCallback(err);
-                            });
-                        }
-
-                        connection.query({
-                            sql: "INSERT INTO " +
-                            "playlistordering(playlistID, trackID, position) " +
-                            "SELECT ?, trackID, (@position := ifnull(@position, 0) + 1)" +
-                            "FROM (SELECT trackID " +
-                            "FROM track " +
-                            "NATURAL JOIN usertracks " +
-                            "WHERE ? LIKE ? " +
-                            "AND usertracks.userID = ?" +
-                            "LIMIT 20) AS tid",
-                            values: [specialresult[0].playlistID, "track." + trackColumnFilter, filterValue, userid/*, playlistLength*/]
-                        }, function (err, result) {
-
-                            // Random insert failed, rollback
-                            if (err) {
-                                return connection.rollback(function () {
-                                    connection.release(); failureCallback(err);
-                                });
-                            }
-
-                            // Commit success and then retrieve
-                            connection.commit(function(err){
-                                if (err) {
-                                    return connection.rollback(function () {
-                                        connection.release(); failureCallback(err);
-                                    });
-                                }
-
-                                db.query({
-                                    sql: "SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName " +
-                                    "FROM track " +
-                                    "JOIN artist ON track.artist = artist.artistID " +
-                                    "JOIN albumordering ON track.trackID = albumordering.track " +
-                                    "JOIN album ON albumordering.album = album.albumID " +
-                                    "JOIN playlistordering ON track.trackID = playlistordering.trackID " +
-                                    "WHERE playlistID = ? " +
-                                    "GROUP BY playlistordering.position " +
-                                    "ORDER BY playlistordering.position",
-                                    values: [specialresult[0].playlistID]
-                                }, function (err, finalresult) {
-
-                                    // Get tracks failed, rollback and quit.
-                                    if (err || finalresult.length == 0) {
-                                        return connection.rollback(function () {
-                                            return connection.query({
-                                                sql: "DELETE FROM playlist WHERE playlistID = ?",
-                                                values: [specialresult[0].playlistID]
-                                            }, function(err2, result){
-                                                connection.release(); failureCallback(err);
-                                            });
-                                        });
-                                    }
-
-                                    // GREAT! Commit and return
-                                    connection.commit(function (err) {
-                                        if (err) {
-                                            return connection.rollback(function () {
-                                                return connection.query({
-                                                    sql: "DELETE FROM playlist WHERE playlistID = ?",
-                                                    values: [specialresult[0].playlistID]
-                                                }, function(err2, result){
-                                                    connection.release(); failureCallback(err);
-                                                });
-                                            });
-                                        }
-
-                                        // Construct final data
-                                        var refinedFinalData = {
-                                            metadata: specialresult[0],
-                                            contents: finalresult
-                                        };
-
-                                        connection.release();
-                                        successCallback(refinedFinalData);
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
+            promiseFactory(connection.query.bind(connection), "START TRANSACTION READ WRITE", null).then(
+                ()=>{
+                    promiseFactory(connection.query.bind(connection), {
+                        sql: 'INSERT INTO playlist(playlistName, datetimeCreated, createdBy) ' +
+                        'VALUES(?, NOW(), ?)',
+                        values: [playlistname, userid]
+                    }).then(
+                        ()=>{
+                            promiseFactory(connection.query.bind(connection), {
+                                sql: "SELECT playlistID, playlistName, datetimeCreated, username " +
+                                "FROM playlist " +
+                                "JOIN user ON createdBy=user.userID " +
+                                "WHERE playlistName = ? AND createdBy = ? " +
+                                "ORDER BY datetimeCreated DESC " +
+                                "LIMIT 1",
+                                values: [playlistname, userid]
+                            }, result=> result.length == 0).then (
+                                specialresult=> {
+                                    promiseFactory(connection.query.bind(connection), "SET @position := 0", null)
+                                        .then(
+                                        ()=> {
+                                            promiseFactory(connection.query.bind(connection), {
+                                                sql: "INSERT INTO " +
+                                                "playlistordering(playlistID, trackID, position) " +
+                                                "SELECT ?, trackID, (@position := ifnull(@position, 0) + 1)" +
+                                                "FROM (SELECT trackID " +
+                                                "FROM track " +
+                                                "NATURAL JOIN usertracks " +
+                                                "WHERE ? LIKE ? " +
+                                                "AND usertracks.userID = ?" +
+                                                "LIMIT 20) AS tid",
+                                                values: [specialresult[0].playlistID, "track." + trackColumnFilter, filterValue, userid/*, playlistLength*/]
+                                            }).then(
+                                                ()=>{
+                                                    promiseFactory(connection.commit.bind(connection))       // COMMIT LINE HERE
+                                                        .then(
+                                                        ()=>{
+                                                            promiseFactory(connection.query.bind(connection), {
+                                                                sql: "SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName " +
+                                                                "FROM track " +
+                                                                "JOIN artist ON track.artist = artist.artistID " +
+                                                                "JOIN albumordering ON track.trackID = albumordering.track " +
+                                                                "JOIN album ON albumordering.album = album.albumID " +
+                                                                "JOIN playlistordering ON track.trackID = playlistordering.trackID " +
+                                                                "WHERE playlistID = ? " +
+                                                                "GROUP BY playlistordering.position " +
+                                                                "ORDER BY playlistordering.position",
+                                                                values: [specialresult[0].playlistID]
+                                                            }, result=>result.length == 0).then(
+                                                                finalResult=>{
+                                                                    // Construct final data
+                                                                    let refinedFinalData = {
+                                                                        metadata: specialresult[0],
+                                                                        contents: finalResult
+                                                                    };
+                                                                    connection.release.bind(connection)();
+                                                                    successCallback(refinedFinalData);
+                                                                }, (err, result)=>postCommitErr.bind(this)({customerr: true, reason: "Playlist contents not retrieved."}, result));
+                                                        }, postCommitErr.bind(this));
+                                                }, rollbackErr);
+                                        }, rollbackErr);
+                                }, (err, result)=>rollbackErr({customerr: true, reason: "Playlist was not created."}, result));
+                        }, rollbackErr);
+                }, transactErr);
+        }, err=>failureCallback(err));
 };
 
 /** Get play time length of playlist.
@@ -525,6 +490,7 @@ exports.getPlaylistLength = function(playlistID, successCallback, failureCallbac
         },
         cb);
 };
+
 
 /** Gets all playlists accessible to a user.
  *
@@ -576,8 +542,8 @@ exports.deleteUser = function(userid, successCallback, failureCallback) {
 
     //Get playlists
     db.query({
-            sql: "DELETE FROM user WHERE userid = ?",
-            values: [userid]
+            sql: "DELETE FROM users WHERE userid = ?",
+            values: [userid,]
         },
         cb);
 };
