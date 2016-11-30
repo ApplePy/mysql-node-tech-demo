@@ -419,7 +419,8 @@ exports.createNewRandomPlaylist = function(userid,
                                                 "FROM (SELECT trackID " +
                                                 "FROM track " +
                                                 "NATURAL JOIN usertracks " +
-                                                "WHERE usertracks.userID = ?" +
+                                                "WHERE usertracks.userID = ? " +
+                                                "ORDER BY RAND() " +
                                                 "LIMIT ?) AS tid",
                                                 values: [specialresult[0].playlistID, userid, parseInt(playlistLength)]
                                             }).then(
