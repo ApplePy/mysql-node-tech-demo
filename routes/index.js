@@ -73,6 +73,7 @@ router.route('/create-user')
         var password = req.body.password;
         var firstname = req.body.prefFirstName;
         var lastname = req.body.lastName;
+
         // Set cookie on success, then redirect to welcome
         var successCallback = function(userid) {
             common_fcns.setCookie(res, userid);
@@ -83,7 +84,9 @@ router.route('/create-user')
         var failureCallback = function(message) {
             res.render('create-user', {title: 'Create User', error: message});
         };
-
+        if (username.replace(/\s+/g, '') == "" || password.replace(/\s+/g, '') == "" || firstname.replace(/\s+/g, '') == "" || lastname.replace(/\s+/g, '') == ""){
+            failureCallback('None of these fields can be empty. Please try again.');
+        }
         // Check credentials
         db_cmds.createUser(username, password, firstname, lastname, successCallback, failureCallback);
     });
