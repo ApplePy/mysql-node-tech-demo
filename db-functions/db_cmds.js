@@ -554,7 +554,8 @@ exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCal
             "LEFT JOIN user ON playlist.createdBy = user.userID " +
             "WHERE musicgroupmembership.user = ? " +
             "OR playlist.createdBy = ? " +
-            "GROUP BY playlistID;",
+            "GROUP BY playlistID " +
+            "ORDER BY datetimeCreated DESC",
             values: [userid, userid]
         },
         cb);
