@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="MySQL">
+  <database-model serializer="dbm" rdbms="MYSQL" format-version="2.6">
+    <schema id="1" name="apollo">
+      <visible>1</visible>
+    </schema>
+    <schema id="2" name="danatest"/>
+    <schema id="3" name="darryltest"/>
+    <schema id="4" name="information_schema"/>
+    <schema id="5" name="mysql"/>
+    <schema id="6" name="performance_schema"/>
+    <schema id="7" name="sys"/>
+    <table id="8" parent="1" name="album"/>
+    <table id="9" parent="1" name="albumordering"/>
+    <table id="10" parent="1" name="artist"/>
+    <table id="11" parent="1" name="genre"/>
+    <table id="12" parent="1" name="musicgroup"/>
+    <table id="13" parent="1" name="musicgroupgenre"/>
+    <table id="14" parent="1" name="musicgroupmembership"/>
+    <table id="15" parent="1" name="playlist"/>
+    <table id="16" parent="1" name="playlistordering"/>
+    <table id="17" parent="1" name="sharedplaylists"/>
+    <table id="18" parent="1" name="track"/>
+    <table id="19" parent="1" name="tracklocation"/>
+    <table id="20" parent="1" name="user"/>
+    <table id="21" parent="1" name="usertracks"/>
+    <column id="22" parent="8" name="albumID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="23" parent="8" name="albumName">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="24" parent="8" name="releaseYear">
+      <mandatory>1</mandatory>
+      <data-type>year(4)|0</data-type>
+    </column>
+    <column id="25" parent="8" name="artist">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="26" parent="8" name="genre">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <index id="27" parent="8" name="album_artist_albumName_releaseYear_genre_uindex">
+      <columns>artist
+albumName
+releaseYear
+genre</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <index id="28" parent="8" name="album_artist_artistID_fk">
+      <columns>artist</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <index id="29" parent="8" name="album_genre_genreID_fk">
+      <columns>genre</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <key id="30" parent="8" name="PRIMARY">
+      <columns>albumID</columns>
+      <primary>1</primary>
+    </key>
+    <key id="31" parent="8" name="album_artist_albumName_releaseYear_genre_uindex">
+      <columns>artist
+albumName
+releaseYear
+genre</columns>
+      <underlying-index>album_artist_albumName_releaseYear_genre_uindex</underlying-index>
+    </key>
+    <foreign-key id="32" parent="8" name="album_artist_artistID_fk">
+      <columns>artist</columns>
+      <ref-key>~.artist.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <foreign-key id="33" parent="8" name="album_genre_genreID_fk">
+      <columns>genre</columns>
+      <ref-key>~.genre.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <column id="34" parent="9" name="position">
+      <mandatory>1</mandatory>
+      <data-type>int(5) unsigned|0</data-type>
+    </column>
+    <column id="35" parent="9" name="album">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="36" parent="9" name="track">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <index id="37" parent="9" name="albumordering_position_album_uindex">
+      <columns>position
+album</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <index id="38" parent="9" name="albumordering_track_trackID_fk">
+      <columns>track</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <key id="39" parent="9" name="PRIMARY">
+      <columns>album
+track</columns>
+      <primary>1</primary>
+    </key>
+    <key id="40" parent="9" name="albumordering_position_album_uindex">
+      <columns>position
+album</columns>
+      <underlying-index>albumordering_position_album_uindex</underlying-index>
+    </key>
+    <foreign-key id="41" parent="9" name="albumordering_album_albumID_fk">
+      <columns>album</columns>
+      <ref-key>~.album.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <foreign-key id="42" parent="9" name="albumordering_track_trackID_fk">
+      <columns>track</columns>
+      <ref-key>~.track.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <column id="43" parent="10" name="artistID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="44" parent="10" name="artistName">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="45" parent="10" name="artistOrigin">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="46" parent="10" name="startYear">
+      <mandatory>1</mandatory>
+      <data-type>year(4)|0</data-type>
+    </column>
+    <index id="47" parent="10" name="artist_artistName_startYear_artistOrigin_uindex">
+      <columns>artistName
+startYear
+artistOrigin</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <key id="48" parent="10" name="PRIMARY">
+      <columns>artistID</columns>
+      <primary>1</primary>
+    </key>
+    <key id="49" parent="10" name="artist_artistName_startYear_artistOrigin_uindex">
+      <columns>artistName
+startYear
+artistOrigin</columns>
+      <underlying-index>artist_artistName_startYear_artistOrigin_uindex</underlying-index>
+    </key>
+    <column id="50" parent="11" name="genreID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="51" parent="11" name="genreName">
+      <mandatory>1</mandatory>
+      <data-type>varchar(20)|0</data-type>
+    </column>
+    <index id="52" parent="11" name="genre_genreName_uindex">
+      <columns>genreName</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <key id="53" parent="11" name="PRIMARY">
+      <columns>genreID</columns>
+      <primary>1</primary>
+    </key>
+    <key id="54" parent="11" name="genre_genreName_uindex">
+      <columns>genreName</columns>
+      <underlying-index>genre_genreName_uindex</underlying-index>
+    </key>
+    <column id="55" parent="12" name="musicgroupID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="56" parent="12" name="musicgroupName">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <index id="57" parent="12" name="musicgroup_musicgroupName_uindex">
+      <columns>musicgroupName</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <key id="58" parent="12" name="PRIMARY">
+      <columns>musicgroupID</columns>
+      <primary>1</primary>
+    </key>
+    <key id="59" parent="12" name="musicgroup_musicgroupName_uindex">
+      <columns>musicgroupName</columns>
+      <underlying-index>musicgroup_musicgroupName_uindex</underlying-index>
+    </key>
+    <column id="60" parent="13" name="musicgroup">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="61" parent="13" name="genre">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <index id="62" parent="13" name="musicgroupgenre_genre_genreID_fk">
+      <columns>genre</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <key id="63" parent="13" name="PRIMARY">
+      <columns>musicgroup
+genre</columns>
+      <primary>1</primary>
+    </key>
+    <foreign-key id="64" parent="13" name="musicgroupgenre_musicgroup_musicgroupID_fk">
+      <columns>musicgroup</columns>
+      <ref-key>~.musicgroup.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <foreign-key id="65" parent="13" name="musicgroupgenre_genre_genreID_fk">
+      <columns>genre</columns>
+      <ref-key>~.genre.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <column id="66" parent="14" name="musicgroup">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="67" parent="14" name="user">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <index id="68" parent="14" name="musicgroupmembership_user_userID_fk">
+      <columns>user</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <key id="69" parent="14" name="PRIMARY">
+      <columns>musicgroup
+user</columns>
+      <primary>1</primary>
+    </key>
+    <foreign-key id="70" parent="14" name="musicgroupmembership_musicgroup_musicgroupID_fk">
+      <columns>musicgroup</columns>
+      <ref-key>~.musicgroup.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <foreign-key id="71" parent="14" name="musicgroupmembership_user_userID_fk">
+      <columns>user</columns>
+      <ref-key>~.user.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <column id="72" parent="15" name="playlistID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="73" parent="15" name="playlistName">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="74" parent="15" name="datetimeCreated">
+      <mandatory>1</mandatory>
+      <data-type>datetime|0</data-type>
+    </column>
+    <column id="75" parent="15" name="createdBy">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <index id="76" parent="15" name="playlist_playlistName_datetimeCreated_createdBy_uindex">
+      <columns>playlistName
+datetimeCreated
+createdBy</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <index id="77" parent="15" name="playlist_user_userID_fk">
+      <columns>createdBy</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <key id="78" parent="15" name="PRIMARY">
+      <columns>playlistID</columns>
+      <primary>1</primary>
+    </key>
+    <key id="79" parent="15" name="playlist_playlistName_datetimeCreated_createdBy_uindex">
+      <columns>playlistName
+datetimeCreated
+createdBy</columns>
+      <underlying-index>playlist_playlistName_datetimeCreated_createdBy_uindex</underlying-index>
+    </key>
+    <foreign-key id="80" parent="15" name="playlist_user_userID_fk">
+      <columns>createdBy</columns>
+      <ref-key>~.user.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <column id="81" parent="16" name="playlistID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="82" parent="16" name="trackID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="83" parent="16" name="position">
+      <mandatory>1</mandatory>
+      <data-type>int(5) unsigned|0</data-type>
+    </column>
+    <index id="84" parent="16" name="playlistordering_playlistID_position_uindex">
+      <columns>playlistID
+position</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <index id="85" parent="16" name="playlistordering_track_trackID_fk">
+      <columns>trackID</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <key id="86" parent="16" name="PRIMARY">
+      <columns>playlistID
+trackID</columns>
+      <primary>1</primary>
+    </key>
+    <key id="87" parent="16" name="playlistordering_playlistID_position_uindex">
+      <columns>playlistID
+position</columns>
+      <underlying-index>playlistordering_playlistID_position_uindex</underlying-index>
+    </key>
+    <foreign-key id="88" parent="16" name="playlistordering_playlist_playlistID_fk">
+      <columns>playlistID</columns>
+      <ref-key>~.playlist.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <foreign-key id="89" parent="16" name="playlistordering_track_trackID_fk">
+      <columns>trackID</columns>
+      <ref-key>~.track.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <column id="90" parent="17" name="musicgroup">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="91" parent="17" name="playlist">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <index id="92" parent="17" name="sharedplaylist_playlist_playlistID_fk">
+      <columns>playlist</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <key id="93" parent="17" name="PRIMARY">
+      <columns>musicgroup
+playlist</columns>
+      <primary>1</primary>
+    </key>
+    <foreign-key id="94" parent="17" name="sharedplaylist_musicgroup_musicgroupID_fk">
+      <columns>musicgroup</columns>
+      <ref-key>~.musicgroup.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <foreign-key id="95" parent="17" name="sharedplaylist_playlist_playlistID_fk">
+      <columns>playlist</columns>
+      <ref-key>~.playlist.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <column id="96" parent="18" name="trackID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="97" parent="18" name="trackName">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="98" parent="18" name="length">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="99" parent="18" name="genre">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="100" parent="18" name="artist">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <index id="101" parent="18" name="track_artist_artistID_fk">
+      <columns>artist</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <index id="102" parent="18" name="track_genre_genreID_fk">
+      <columns>genre</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <index id="103" parent="18" name="track_trackName_artist_uindex">
+      <columns>trackName
+artist</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <key id="104" parent="18" name="PRIMARY">
+      <columns>trackID</columns>
+      <primary>1</primary>
+    </key>
+    <key id="105" parent="18" name="track_trackName_artist_uindex">
+      <columns>trackName
+artist</columns>
+      <underlying-index>track_trackName_artist_uindex</underlying-index>
+    </key>
+    <foreign-key id="106" parent="18" name="track_genre_genreID_fk">
+      <columns>genre</columns>
+      <ref-key>~.genre.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <foreign-key id="107" parent="18" name="track_artist_artistID_fk">
+      <columns>artist</columns>
+      <ref-key>~.artist.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <column id="108" parent="19" name="trackID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="109" parent="19" name="filePath">
+      <mandatory>1</mandatory>
+      <data-type>varchar(256)|0</data-type>
+    </column>
+    <index id="110" parent="19" name="tracklocation_filePath_uindex">
+      <columns>filePath</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <key id="111" parent="19" name="PRIMARY">
+      <columns>trackID</columns>
+      <primary>1</primary>
+    </key>
+    <key id="112" parent="19" name="tracklocation_filePath_uindex">
+      <columns>filePath</columns>
+      <underlying-index>tracklocation_filePath_uindex</underlying-index>
+    </key>
+    <foreign-key id="113" parent="19" name="tracklocation_track_trackID_fk">
+      <columns>trackID</columns>
+      <ref-key>~.track.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <column id="114" parent="20" name="userID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="115" parent="20" name="username">
+      <mandatory>1</mandatory>
+      <data-type>varchar(20)|0</data-type>
+    </column>
+    <column id="116" parent="20" name="password">
+      <mandatory>1</mandatory>
+      <data-type>varchar(60)|0</data-type>
+    </column>
+    <column id="117" parent="20" name="prefFirstName">
+      <mandatory>1</mandatory>
+      <data-type>varchar(20)|0</data-type>
+    </column>
+    <column id="118" parent="20" name="lastName">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <index id="119" parent="20" name="user_username_uindex">
+      <columns>username</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <key id="120" parent="20" name="PRIMARY">
+      <columns>userID</columns>
+      <primary>1</primary>
+    </key>
+    <key id="121" parent="20" name="user_username_uindex">
+      <columns>username</columns>
+      <underlying-index>user_username_uindex</underlying-index>
+    </key>
+    <column id="122" parent="21" name="userID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <column id="123" parent="21" name="trackID">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+    </column>
+    <index id="124" parent="21" name="usertracks_track_trackID_fk">
+      <columns>trackID</columns>
+      <desc-columns></desc-columns>
+    </index>
+    <key id="125" parent="21" name="PRIMARY">
+      <columns>userID
+trackID</columns>
+      <primary>1</primary>
+    </key>
+    <foreign-key id="126" parent="21" name="usertracks_user_userID_fk">
+      <columns>userID</columns>
+      <ref-key>~.user.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+    <foreign-key id="127" parent="21" name="usertracks_track_trackID_fk">
+      <columns>trackID</columns>
+      <ref-key>~.track.PRIMARY</ref-key>
+      <cascade-update-rule>restrict</cascade-update-rule>
+      <cascade-delete-rule>restrict</cascade-delete-rule>
+    </foreign-key>
+  </database-model>
+</dataSource>
