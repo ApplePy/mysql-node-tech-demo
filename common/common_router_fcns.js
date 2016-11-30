@@ -169,7 +169,7 @@ exports.GenerateRandomPlaylist = function(res, req){
     }
     var failureCallback = function(msg){
         console.log(msg);
-        res.send([{playlistid: 6666, playlistName: req.body.name, datetimeCreated: '2016-01-11Tblah', username: 'TEST'}, {trackid: 6666, trackName: 'test', trackLength: 47893, artistName: 'testing', albumName: 'boo'}]);
+        res.send(msg);
     }
     var userid = common_fcns.getUserID(req);
     try {

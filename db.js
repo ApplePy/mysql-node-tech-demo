@@ -16,7 +16,7 @@ var state = {
 }
 
 exports.connect = function(mode, done) {
-    state.pool = mysql.createConnection({
+    state.pool = mysql.createPool({
         host: 'puddleglum.murrayweb.ca',
         user: 'root',
         password: 'se3309a',
