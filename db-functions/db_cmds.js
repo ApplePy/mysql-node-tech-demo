@@ -24,6 +24,7 @@ exports.suggestedTrack = function (userid, successCallback, failureCallback) {
         }
     };
 
+    // Get trackID, trackName, artistName, and musicgroupName for tracks the user has access to, but does not own
     db.query({
             sql: "SELECT track.trackID, trackName, artistName, musicgroupName " +
             "FROM musicgroupmembership AS gm " +
@@ -39,10 +40,17 @@ exports.suggestedTrack = function (userid, successCallback, failureCallback) {
             "ON po.trackID = track.trackID " +
             "JOIN artist " +
             "ON track.artist = artist.artistID " +
-            "WHERE gm.user != ? " +     // TODO: filter own tracks out better
-            "ORDER BY RAND() " +
+            "WHERE track.trackID NOT IN (" +
+            "SELECT trackID " +
+            "FROM usertracks " +
+            "WHERE userID = ?) " +
+            "AND g.musicgroupID IN (" +
+            "SELECT mgm.musicgroup " +
+            "FROM musicgroupmembership AS mgm " +
+            "WHERE mgm.user=?)" +
+            "GROUP BY track.trackID " +
             "LIMIT 1;",
-            values: [userid]
+            values: [userid, userid]
         },
         cb);
 };
@@ -311,7 +319,7 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
         }
     };
 
-    // Get user's tracks
+    // Get user's tracks, where inner SELECT gets all the tracks the user does not own
     db.query({
             sql: "SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName " +
             "FROM track " +
@@ -321,7 +329,8 @@ exports.getAllTracksAccessible = function(userid, successCallback, failureCallba
             "JOIN artist ON album.artist=artist.artistID " +
             "WHERE usertracks.userID = ? " +
             "OR track.trackID IN (" +
-            "SELECT trackID FROM playlistordering AS po " +
+            "SELECT trackID " +
+            "FROM playlistordering AS po " +
             "JOIN sharedplaylists AS sp ON po.playlistID=sp.playlist " +
             "JOIN musicgroupmembership AS mgm ON sp.musicgroup=mgm.musicgroup " +
             "WHERE mgm.user = ?) " +
@@ -384,8 +393,10 @@ exports.createNewRandomPlaylist = function(userid,
 
     // Get a stable, non-closing connection to the DB
     // NOTE: DO NOT THROW! MySQLJS catches them and then causes issues.
+    // TODO: this binding is acting very funny
     promiseFactory(db.get().getConnection.bind(db.get())).then(
         connection=>{
+            // Set up error callbacks
             let transactErr     = (err, result)=>{connection.release.bind(connection)(); failureCallback(err);};
             let rollbackErr     = (err, result)=>connection.rollback.bind(connection)(()=>{transactErr(err)});
             let postCommitErr   = function(err, result) {return connection.rollback.bind(connection)(()=>connection.query.bind(connection)({
@@ -393,14 +404,17 @@ exports.createNewRandomPlaylist = function(userid,
                 values: [this.specialresult[0].playlistID]
             }, transactErr))};
 
+            // Start transaction
             promiseFactory(connection.query.bind(connection), "START TRANSACTION READ WRITE", null).then(
                 ()=>{
+                    // Insert new playlist
                     promiseFactory(connection.query.bind(connection), {
                         sql: 'INSERT INTO playlist(playlistName, datetimeCreated, createdBy) ' +
                         'VALUES(?, NOW(), ?)',
                         values: [playlistname, userid]
                     }).then(
                         ()=>{
+                            // Get the information for the newly created playlist
                             promiseFactory(connection.query.bind(connection), {
                                 sql: "SELECT playlistID, playlistName, datetimeCreated, username " +
                                 "FROM playlist " +
@@ -411,9 +425,11 @@ exports.createNewRandomPlaylist = function(userid,
                                 values: [playlistname, userid]
                             }, result=> result.length == 0).then (
                                 specialresult=> {
+                                    // Set up the countinbg variable
                                     promiseFactory(connection.query.bind(connection), "SET @position := 0", null)
                                         .then(
                                         ()=> {
+                                            // Insert random tracks that the user owns
                                             promiseFactory(connection.query.bind(connection), {
                                                 sql: "INSERT INTO " +
                                                 "playlistordering(playlistID, trackID, position) " +
@@ -430,6 +446,7 @@ exports.createNewRandomPlaylist = function(userid,
                                                     promiseFactory(connection.commit.bind(connection))       // COMMIT LINE HERE
                                                         .then(
                                                         ()=>{
+                                                            // Get all the tracks that were just randonly added
                                                             promiseFactory(connection.query.bind(connection), {
                                                                 sql: "SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName " +
                                                                 "FROM track " +
@@ -443,11 +460,13 @@ exports.createNewRandomPlaylist = function(userid,
                                                                 values: [specialresult[0].playlistID]
                                                             }, result=>result.length == 0).then(
                                                                 finalResult=>{
-                                                                    // Construct final data
+                                                                    // Construct final data for front end.
                                                                     let refinedFinalData = {
                                                                         metadata: specialresult[0],
                                                                         contents: finalResult
                                                                     };
+
+                                                                    // Clean up and send
                                                                     connection.release.bind(connection)();
                                                                     successCallback(refinedFinalData);
                                                                 }, (err, result)=>postCommitErr.bind(this)({customerr: true, reason: "Playlist contents not retrieved."}, result));
@@ -511,7 +530,7 @@ exports.getAllPlaylistsAccessible = function(userid, successCallback, failureCal
         }
     };
 
-    //Get playlists
+    //Get playlists, including ones not shared by the requesting user
     db.query({
             sql: "SELECT playlist.playlistID AS playlistid, playlistName, datetimeCreated, user.username AS username " +
             "FROM playlist " +
@@ -540,7 +559,7 @@ exports.deleteUser = function(userid, successCallback, failureCallback) {
         else successCallback();
     };
 
-    //Get playlists
+    // Delete user
     db.query({
             sql: "DELETE FROM users WHERE userid = ?",
             values: [userid,]
