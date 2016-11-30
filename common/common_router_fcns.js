@@ -45,6 +45,17 @@ exports.loggedInRedirect = function(res, req) {
     }
 };
 
+exports.loggedOutRedirect = function(res, req) {
+    var userid = common_fcns.getUserID(req);
+    if (userid != undefined) {
+        res.redirect('/');
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 
 /**
  * Log out (delete cookie and redirect).
