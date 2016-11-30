@@ -98,13 +98,7 @@ router.route('/create-user')
  */
 router.route('/welcome')
     .get(function(req, res){
-        var cb = function() {
-            res.render('index', {title: 'Apollo'});
-        };
-
-        // Redirect if logged in
-        if (!common_fcns.loggedInRedirect(res, req)) cb();
-        else common_fcns.GetSuggestedTrackAndUserName(res,req,'welcome');
+    common_fcns.GetSuggestedTrackAndUserName(res,req,'welcome');
     });
 
 
