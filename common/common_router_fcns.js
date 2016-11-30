@@ -4,14 +4,21 @@
 var db_cmds = require('../db-functions/db_cmds');
 var common_fcns = require('../common/common_router_fcns')
 
-// Sets the user ID cookie
-// TODO: Set the cookie as signed
+
+/**
+ * Set user cookie.
+ * @param res       Response
+ * @param userid    The user ID from which to set the cookie with.
+ */
 exports.setCookie = function(res, userid) {
     res.cookie("userid", userid, {overwrite: true, maxAge: 1000 * 60 * 60 * 24}); // 24 hour expiry
 };
 
-// Get user ID from cookie
-// TODO: Decrypt cookie once signed
+/**
+ * Get user ID from cookie.
+ * @param req       Request
+ * @returns {*}
+ */
 exports.getUserID = function(req) {
     if (req.cookies != undefined) {
         if (req.cookies.userid != undefined)
@@ -20,8 +27,13 @@ exports.getUserID = function(req) {
     else return undefined;
 };
 
-// Redirect if logged in
-// TODO: Verify that the user ID actually exists
+
+/**
+ * Redirect to home page if already logged in (cookie detected).
+ * @param res       Response
+ * @param req       Request
+ * @returns {boolean}
+ */
 exports.loggedInRedirect = function(res, req) {
     var userid = common_fcns.getUserID(req);
     if (userid != undefined) {
@@ -33,19 +45,29 @@ exports.loggedInRedirect = function(res, req) {
     }
 };
 
+
+/**
+ * Log out (delete cookie and redirect).
+ * @param res       Response
+ * @param req       Request
+ */
 exports.logOut = function(res, req){
     res.cookie("userid", "", { expires: new Date() });
     res.json({ 'redirect' : '/'});
 }
 
+
+/**
+ * Delete current user account (then delete cookie, redirect).
+ * @param res
+ * @param req
+ */
 exports.deleteAccount = function(res, req){
-    var successCallback = function(results){
-        console.log('success');
+    var successCallback = function(){
         res.cookie("userid", "", { expires: new Date() });
         res.json({ 'redirect' : '/'});
     }
     var failureCallback = function(msg){
-        console.log(msg);
         res.send(msg);
     }
     var userid = common_fcns.getUserID(req);
@@ -56,6 +78,13 @@ exports.deleteAccount = function(res, req){
     }
 }
 
+/**
+ * Get suggested track and current user name.
+ * @param res           Response
+ * @param req           Request
+ * @param pageName      Page name on which to render. (settings or welcome)
+ * @constructor
+ */
 exports.GetSuggestedTrackAndUserName = function(res, req, pageName){
     var callbackSuggestionSucceeded = function(trackID, trackName, artistName, musicGroup){
         var stash = function(prefFirstName, lastName, username){
@@ -98,10 +127,15 @@ exports.GetSuggestedTrackAndUserName = function(res, req, pageName){
     db_cmds.suggestedTrack(userid, callbackSuggestionSucceeded, callbackSuggestionFailed);
 }
 
+
+/**
+ * Get personal user tracks.
+ * @param res       Response
+ * @param req       Request
+ */
 exports.getUserTracks = function(res, req){
     var successCallback = function(results){
         res.send(JSON.stringify(results));
-        //res.render('welcome', {title: 'Welcome', tracks: results});
     }
     var failureCallback = function(msg){
         res.send(msg);
@@ -110,6 +144,12 @@ exports.getUserTracks = function(res, req){
     db_cmds.getAllUserTracks(userid, successCallback, failureCallback);
 }
 
+
+/**
+ * Get top 50 tracks the user has access to but doesn't personally have.
+ * @param res     Response
+ * @param req       Request
+ */
 exports.getTop50Tracks = function(res, req){
     var successCallback = function(results){
         res.send(JSON.stringify(results));
@@ -121,6 +161,13 @@ exports.getTop50Tracks = function(res, req){
     db_cmds.getPopularTracks(userid, successCallback, failureCallback);
 }
 
+
+/**
+ * Get number of 'likes' on track (number of users who have that track in their personal library).
+ * @param res       Response
+ * @param req       Request
+ * @param trackid   Track ID on which the likes are being calculated.
+ */
 exports.getTrackLikes = function(res, req, trackid){
     var successCallback = function(results){
         console.log(results);
@@ -133,6 +180,12 @@ exports.getTrackLikes = function(res, req, trackid){
     db_cmds.getLikes(userid, trackid, successCallback, failureCallback);
 }
 
+
+/**
+ * Get all tracks (personal and group).
+ * @param res       Response
+ * @param req       Request
+ */
 exports.getAllTracks = function(res, req){
     var successCallback = function(results){
         res.send(JSON.stringify(results));
@@ -144,6 +197,12 @@ exports.getAllTracks = function(res, req){
     db_cmds.getAllTracksAccessible(userid, successCallback, failureCallback);
 }
 
+
+/**
+ * Get all playlists (personal and group).
+ * @param res       Response
+ * @param req       Request
+ */
 exports.getPlaylists = function(res, req){
     var successCallback = function(results){
         res.send(JSON.stringify(results));
@@ -155,6 +214,13 @@ exports.getPlaylists = function(res, req){
     db_cmds.getAllPlaylistsAccessible(userid, successCallback, failureCallback);
 }
 
+
+/**
+ * Get playlist length (total elapsed time of playlist by adding up track lengths).
+ * @param res           Response
+ * @param req           Request
+ * @param playlistid    Playlist ID on which the total elapsed time is being calculated.
+ */
 exports.getPlaylistLength = function(res, req, playlistid){
     var successCallback = function(results){
         res.send(JSON.stringify(results));
@@ -165,6 +231,12 @@ exports.getPlaylistLength = function(res, req, playlistid){
     db_cmds.getPlaylistLength(playlistid, successCallback, failureCallback);
 }
 
+
+/**
+ * Change current user password.
+ * @param res       Response
+ * @param req       Request (contains password, not secure)
+ */
 exports.changePassword = function(res, req){
     var successCallback = function(){
         res.json({message: 'Success'});
@@ -177,6 +249,13 @@ exports.changePassword = function(res, req){
     db_cmds.updateUserPassword(userid, password, successCallback, failureCallback);
 }
 
+
+/**
+ * Generate random playlist.
+ * @param res       Response
+ * @param req       Request (contains all prompted values)
+ * @constructor
+ */
 exports.GenerateRandomPlaylist = function(res, req){
     var successCallback = function(results){
         res.send(JSON.stringify(results));
