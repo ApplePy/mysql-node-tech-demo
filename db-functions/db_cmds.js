@@ -349,23 +349,31 @@ exports.createNewRandomPlaylist = function(userid,
                                            playlistLength,
                                            successCallback,
                                            failureCallback) {
-    // Call the appropriate callback
-    var cb = function(error, results){
-        if (error) {
-            failureCallback(error);
-        }
-        else {
-            successCallback(results);
-        }
-    };
 
+    // Get a stable, non-closing connection to the DB
+    // NOTE: DO NOT THROW! MySQLJS catches them and then causes issues.
     db.get().getConnection(function(err, connection) {
+
+        // Set up error convenience callbacks
+        var connectErr = function(err) {if (err) {connection.release(); failureCallback(err); return true;} return false;};
+        var preCommitErr = function(err) { if (err) return connection.rollback(function() {connectErr(err)}); else return false;};
+        var postCommitErr = function(err, specialresult) {
+            if (err) {
+                return connection.rollback(function () {
+                    return connection.query({
+                        sql: "DELETE FROM playlist WHERE playlistID = ?",
+                        values: [specialresult[0].playlistID]
+                    }, function (err2, result) {
+                        connection.release();
+                        failureCallback(err);
+                    });
+                });
+            } else return false;
+        };
+
         connection.query ("START TRANSACTION READ WRITE", function (err) {
             // Can't start transaction, stop
-            if (err) {
-                connection.release(); failureCallback(err);
-                return;
-            }
+            if (connectErr(err)) return;
 
             // Create new playlist for the user
             connection.query({
@@ -375,11 +383,7 @@ exports.createNewRandomPlaylist = function(userid,
             }, function (err, result) {
 
                 // Create playlist failed, rollback and quit.
-                if (err) {
-                    return connection.rollback(function () {
-                        connection.release(); failureCallback(err);
-                    });
-                }
+                if (preCommitErr(err)) return;
 
                 connection.query({
                     sql: "SELECT playlistID, playlistName, datetimeCreated, username " +
@@ -392,11 +396,8 @@ exports.createNewRandomPlaylist = function(userid,
                 }, function (err, specialresult) {
 
                     // Get playlist failed, rollback and quit.
-                    if (err || specialresult.length == 0) {
-                        return connection.rollback(function () {
-                            connection.release(); failureCallback(err);
-                        });
-                    }
+                    if (specialresult.length == 0) err={customerr: true, reason: "Playlist was not created."};  // Will trigger preCommitErr.
+                    if (preCommitErr(err)) return;
 
                     connection.query({
                         sql: "SET @position := 0",
@@ -404,11 +405,7 @@ exports.createNewRandomPlaylist = function(userid,
                     }, function (err, result) {
 
                         // Reset position variable failed, rollback and exit
-                        if (err) {
-                            return connection.rollback(function () {
-                                connection.release(); failureCallback(err);
-                            });
-                        }
+                        if (preCommitErr(err)) return;
 
                         connection.query({
                             sql: "INSERT INTO " +
@@ -424,19 +421,11 @@ exports.createNewRandomPlaylist = function(userid,
                         }, function (err, result) {
 
                             // Random insert failed, rollback
-                            if (err) {
-                                return connection.rollback(function () {
-                                    connection.release(); failureCallback(err);
-                                });
-                            }
+                            if (preCommitErr(err)) return;
 
                             // Commit success and then retrieve
                             connection.commit(function(err){
-                                if (err) {
-                                    return connection.rollback(function () {
-                                        connection.release(); failureCallback(err);
-                                    });
-                                }
+                                if (preCommitErr(err)) return;
 
                                 db.query({
                                     sql: "SELECT track.trackID AS trackid, trackName, length AS trackLength, artistName, albumName " +
@@ -452,29 +441,12 @@ exports.createNewRandomPlaylist = function(userid,
                                 }, function (err, finalresult) {
 
                                     // Get tracks failed, rollback and quit.
-                                    if (err || finalresult.length == 0) {
-                                        return connection.rollback(function () {
-                                            return connection.query({
-                                                sql: "DELETE FROM playlist WHERE playlistID = ?",
-                                                values: [specialresult[0].playlistID]
-                                            }, function(err2, result){
-                                                connection.release(); failureCallback(err);
-                                            });
-                                        });
-                                    }
+                                    if (finalresult.length == 0) err={customerr: true, reason: "Playlist was not created."};  // Will trigger postCommitErr.
+                                    if (postCommitErr(err, specialresult)) return;
 
                                     // GREAT! Commit and return
                                     connection.commit(function (err) {
-                                        if (err) {
-                                            return connection.rollback(function () {
-                                                return connection.query({
-                                                    sql: "DELETE FROM playlist WHERE playlistID = ?",
-                                                    values: [specialresult[0].playlistID]
-                                                }, function(err2, result){
-                                                    connection.release(); failureCallback(err);
-                                                });
-                                            });
-                                        }
+                                        if (postCommitErr(err, specialresult)) return;
 
                                         // Construct final data
                                         var refinedFinalData = {
@@ -525,6 +497,7 @@ exports.getPlaylistLength = function(playlistID, successCallback, failureCallbac
         },
         cb);
 };
+
 
 /** Gets all playlists accessible to a user.
  *
